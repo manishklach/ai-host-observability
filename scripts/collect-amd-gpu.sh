@@ -41,4 +41,4 @@ for key, value in payload.items():
   is_number "$util" && emit_metric "nixl_gpu_utilization_percent" "$util" "vendor=amd" "index=${index}" "uuid=${uuid}"
 done
 
-prom_end_scrape
+prom_end_scrape "nixl_amd_gpu_scrape_success"

@@ -45,4 +45,4 @@ print("0", "intel-0", util, sep="\t")
   is_number "$util" && emit_metric "nixl_gpu_utilization_percent" "$util" "vendor=intel" "index=${index}" "uuid=${uuid}"
 done
 
-prom_end_scrape
+prom_end_scrape "nixl_intel_gpu_scrape_success"
