@@ -132,6 +132,10 @@ A starter dashboard lives at `grafana/ai-host-overview.json`. Import it into Gra
 
 Validation steps for WSL and native Linux hosts live in `TESTING.md`.
 
+## Kernel Debugging
+
+Kernel-side debugging guidance for `CONFIG_*`, `sysctl`, `debugfs`, `tracefs`, `page_owner`, `kmemleak`, `pstore`, and `KGDB/KDB` lives in `KERNEL_DEBUGGING.md`.
+
 ## Why These Signals Matter
 
 - `fw_pages_total` exposes host-side pinned accounting that guest workloads cannot directly see.
