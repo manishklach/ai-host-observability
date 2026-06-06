@@ -51,17 +51,17 @@ if command_exists "$NVIDIA_SMI"; then
     bar1_used="$(xargs <<<"$bar1_used")"
     bar1_total="$(xargs <<<"$bar1_total")"
 
-    emit_metric "nixl_gpu_info" 1 "index=${index}" "uuid=${uuid}" "name=${name}" "pci_bus=${pci_bus}"
-    is_number "$util" && emit_metric "nixl_gpu_utilization_percent" "$util" "index=${index}" "uuid=${uuid}"
-    is_number "$mem_used" && emit_metric "nixl_gpu_memory_used_bytes" "$(to_bytes_from_mib "$mem_used")" "index=${index}" "uuid=${uuid}"
-    is_number "$mem_total" && emit_metric "nixl_gpu_memory_total_bytes" "$(to_bytes_from_mib "$mem_total")" "index=${index}" "uuid=${uuid}"
-    is_number "$temp" && emit_metric "nixl_gpu_temperature_celsius" "$temp" "index=${index}" "uuid=${uuid}"
-    is_number "$power" && emit_metric "nixl_gpu_power_draw_watts" "$power" "index=${index}" "uuid=${uuid}"
-    is_number "$gen" && emit_metric "nixl_gpu_pcie_link_gen" "$gen" "index=${index}" "uuid=${uuid}"
-    is_number "$width" && emit_metric "nixl_gpu_pcie_link_width" "$width" "index=${index}" "uuid=${uuid}"
-    is_integer "$ecc" && emit_metric "nixl_gpu_ecc_volatile_total" "$ecc" "index=${index}" "uuid=${uuid}"
-    is_number "$bar1_used" && emit_metric "nixl_gpu_bar1_used_bytes" "$(to_bytes_from_mib "$bar1_used")" "index=${index}" "uuid=${uuid}"
-    is_number "$bar1_total" && emit_metric "nixl_gpu_bar1_total_bytes" "$(to_bytes_from_mib "$bar1_total")" "index=${index}" "uuid=${uuid}"
+    emit_metric "nixl_gpu_info" 1 "vendor=nvidia" "index=${index}" "uuid=${uuid}" "name=${name}" "pci_bus=${pci_bus}"
+    is_number "$util" && emit_metric "nixl_gpu_utilization_percent" "$util" "vendor=nvidia" "index=${index}" "uuid=${uuid}"
+    is_number "$mem_used" && emit_metric "nixl_gpu_memory_used_bytes" "$(to_bytes_from_mib "$mem_used")" "vendor=nvidia" "index=${index}" "uuid=${uuid}"
+    is_number "$mem_total" && emit_metric "nixl_gpu_memory_total_bytes" "$(to_bytes_from_mib "$mem_total")" "vendor=nvidia" "index=${index}" "uuid=${uuid}"
+    is_number "$temp" && emit_metric "nixl_gpu_temperature_celsius" "$temp" "vendor=nvidia" "index=${index}" "uuid=${uuid}"
+    is_number "$power" && emit_metric "nixl_gpu_power_draw_watts" "$power" "vendor=nvidia" "index=${index}" "uuid=${uuid}"
+    is_number "$gen" && emit_metric "nixl_gpu_pcie_link_gen" "$gen" "vendor=nvidia" "index=${index}" "uuid=${uuid}"
+    is_number "$width" && emit_metric "nixl_gpu_pcie_link_width" "$width" "vendor=nvidia" "index=${index}" "uuid=${uuid}"
+    is_integer "$ecc" && emit_metric "nixl_gpu_ecc_volatile_total" "$ecc" "vendor=nvidia" "index=${index}" "uuid=${uuid}"
+    is_number "$bar1_used" && emit_metric "nixl_gpu_bar1_used_bytes" "$(to_bytes_from_mib "$bar1_used")" "vendor=nvidia" "index=${index}" "uuid=${uuid}"
+    is_number "$bar1_total" && emit_metric "nixl_gpu_bar1_total_bytes" "$(to_bytes_from_mib "$bar1_total")" "vendor=nvidia" "index=${index}" "uuid=${uuid}"
   done < <("$NVIDIA_SMI" --query-gpu="$query" --format=csv,noheader,nounits 2>/dev/null || true)
 fi
 

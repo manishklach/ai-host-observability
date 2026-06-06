@@ -164,3 +164,48 @@ assert_exporter_out_dir() {
   assert_exporter_out_dir "nixl_pcie_vfio"
 }
 
+@test "nixl_amd_gpu direct fixture run emits Prometheus metrics" {
+  assert_exporter_direct "collect-amd-gpu.sh"
+}
+
+@test "nixl_amd_gpu missing proc path emits wrapper failure metric" {
+  assert_exporter_missing_proc "nixl_amd_gpu"
+}
+
+@test "nixl_amd_gpu respects OUT_DIR via collect-all" {
+  assert_exporter_out_dir "nixl_amd_gpu"
+}
+
+@test "nixl_amd_gpu emits success 0 when rocm-smi is absent" {
+  local output_file="${TEST_TMPDIR}/collect-amd-gpu.sh.prom"
+
+  while IFS= read -r assignment; do
+    export "$assignment"
+  done < <(common_env)
+
+  run env ROCM_SMI="${TEST_TMPDIR}/missing-rocm-smi" bash "${ROOT_DIR}/scripts/collect-amd-gpu.sh"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *'nixl_amd_gpu_scrape_success 0 '* ]]
+}
+
+@test "nixl_intel_gpu direct fixture run emits Prometheus metrics" {
+  assert_exporter_direct "collect-intel-gpu.sh"
+}
+
+@test "nixl_intel_gpu missing proc path emits wrapper failure metric" {
+  assert_exporter_missing_proc "nixl_intel_gpu"
+}
+
+@test "nixl_intel_gpu respects OUT_DIR via collect-all" {
+  assert_exporter_out_dir "nixl_intel_gpu"
+}
+
+@test "nixl_intel_gpu emits success 0 when intel_gpu_top is absent" {
+  while IFS= read -r assignment; do
+    export "$assignment"
+  done < <(common_env)
+
+  run env INTEL_GPU_TOP="${TEST_TMPDIR}/missing-intel-gpu-top" bash "${ROOT_DIR}/scripts/collect-intel-gpu.sh"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *'nixl_intel_gpu_scrape_success 0 '* ]]
+}

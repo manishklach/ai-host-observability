@@ -23,6 +23,8 @@ DEBUGFS_ROOT=${FIXTURE_DIR}/debugfs
 CGROUP_PATH=${FIXTURE_DIR}/cgroup/workload
 ETHTOOL=${FIXTURE_DIR}/bin/ethtool
 NVIDIA_SMI=${FIXTURE_DIR}/bin/nvidia-smi
+ROCM_SMI=${FIXTURE_DIR}/bin/rocm-smi
+INTEL_GPU_TOP=${FIXTURE_DIR}/bin/intel_gpu_top
 JOURNALCTL=${FIXTURE_DIR}/bin/journalctl
 INTERESTING_DRIVERS_REGEX=.*
 NET_IFACES=eth0
@@ -64,4 +66,3 @@ assert_wrapper_failure() {
   local file="$2"
   grep -Eq "ai_host_exporter_last_run_success\\{exporter=\"${exporter}\"\\} 0 [0-9]+$" "$file"
 }
-

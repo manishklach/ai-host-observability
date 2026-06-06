@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cat <<'EOF'
+{
+  "card0": {
+    "Unique ID": "AMD-000",
+    "Temperature (Sensor edge) (C)": 55.5,
+    "VRAM Total Used Memory (B)": 8589934592,
+    "VRAM Total Memory (B)": 17179869184,
+    "GPU use (%)": 73
+  }
+}
+EOF
+

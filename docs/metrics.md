@@ -340,7 +340,7 @@ This document is the metric contract for `ai-host-observability`.
 ### `nixl_gpu_info`
 
 - Type: `gauge`
-- Labels: `index`, `uuid`, `name`, `pci_bus`
+- Labels: `vendor`, `index`, `uuid`, `name`, `pci_bus`
 - Unit: constant `1`
 - Source: `${NVIDIA_SMI}`
 - When absent: `nvidia-smi` missing or no visible GPU
@@ -349,41 +349,41 @@ This document is the metric contract for `ai-host-observability`.
 ### `nixl_gpu_utilization_percent`
 
 - Type: `gauge`
-- Labels: `index`, `uuid`
+- Labels: `vendor`, `index`, `uuid`
 - Unit: percent
-- Source: `${NVIDIA_SMI}`
-- When absent: GPU metrics unavailable
+- Source: `${NVIDIA_SMI}`, `${ROCM_SMI}`, or `${INTEL_GPU_TOP}`
+- When absent: GPU metrics unavailable or vendor utility missing
 - Interpretation: SM utilization
 
 ### `nixl_gpu_memory_used_bytes`
 
 - Type: `gauge`
-- Labels: `index`, `uuid`
+- Labels: `vendor`, `index`, `uuid`
 - Unit: bytes
-- Source: `${NVIDIA_SMI}`
+- Source: `${NVIDIA_SMI}` or `${ROCM_SMI}`
 - When absent: GPU metrics unavailable
 - Interpretation: device memory in use
 
 ### `nixl_gpu_memory_total_bytes`
 
 - Type: `gauge`
-- Labels: `index`, `uuid`
+- Labels: `vendor`, `index`, `uuid`
 - Unit: bytes
-- Source: `${NVIDIA_SMI}`
+- Source: `${NVIDIA_SMI}` or `${ROCM_SMI}`
 - When absent: GPU metrics unavailable
 
 ### `nixl_gpu_temperature_celsius`
 
 - Type: `gauge`
-- Labels: `index`, `uuid`
+- Labels: `vendor`, `index`, `uuid`
 - Unit: Celsius
-- Source: `${NVIDIA_SMI}`
+- Source: `${NVIDIA_SMI}` or `${ROCM_SMI}`
 - When absent: GPU metrics unavailable
 
 ### `nixl_gpu_power_draw_watts`
 
 - Type: `gauge`
-- Labels: `index`, `uuid`
+- Labels: `vendor`, `index`, `uuid`
 - Unit: watts
 - Source: `${NVIDIA_SMI}`
 - When absent: GPU metrics unavailable
@@ -391,7 +391,7 @@ This document is the metric contract for `ai-host-observability`.
 ### `nixl_gpu_pcie_link_gen`
 
 - Type: `gauge`
-- Labels: `index`, `uuid`
+- Labels: `vendor`, `index`, `uuid`
 - Unit: PCIe generation
 - Source: `${NVIDIA_SMI}`
 - When absent: GPU metrics unavailable
@@ -400,7 +400,7 @@ This document is the metric contract for `ai-host-observability`.
 ### `nixl_gpu_pcie_link_width`
 
 - Type: `gauge`
-- Labels: `index`, `uuid`
+- Labels: `vendor`, `index`, `uuid`
 - Unit: lanes
 - Source: `${NVIDIA_SMI}`
 - When absent: GPU metrics unavailable
@@ -408,7 +408,7 @@ This document is the metric contract for `ai-host-observability`.
 ### `nixl_gpu_ecc_volatile_total`
 
 - Type: `counter`
-- Labels: `index`, `uuid`
+- Labels: `vendor`, `index`, `uuid`
 - Unit: ECC errors
 - Source: `${NVIDIA_SMI}`
 - When absent: ECC unavailable
@@ -416,7 +416,7 @@ This document is the metric contract for `ai-host-observability`.
 ### `nixl_gpu_bar1_used_bytes`
 
 - Type: `gauge`
-- Labels: `index`, `uuid`
+- Labels: `vendor`, `index`, `uuid`
 - Unit: bytes
 - Source: `${NVIDIA_SMI}`
 - When absent: BAR1 metrics unavailable
@@ -425,10 +425,28 @@ This document is the metric contract for `ai-host-observability`.
 ### `nixl_gpu_bar1_total_bytes`
 
 - Type: `gauge`
-- Labels: `index`, `uuid`
+- Labels: `vendor`, `index`, `uuid`
 - Unit: bytes
 - Source: `${NVIDIA_SMI}`
 - When absent: BAR1 metrics unavailable
+
+### `nixl_amd_gpu_scrape_success`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `scripts/collect-amd-gpu.sh`
+- When absent: exporter failed before emitting output
+- Interpretation: AMD collector completed; `0` may also indicate `rocm-smi` is unavailable
+
+### `nixl_intel_gpu_scrape_success`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `scripts/collect-intel-gpu.sh`
+- When absent: exporter failed before emitting output
+- Interpretation: Intel collector completed; `0` may also indicate `intel_gpu_top` is unavailable
 
 ## Disk and Filesystem Exporter
 
@@ -591,4 +609,3 @@ This document is the metric contract for `ai-host-observability`.
 - Source: `${PROC_ROOT}/modules`
 - When absent: proc modules unavailable
 - Interpretation: whether selected driver modules are loaded
-
