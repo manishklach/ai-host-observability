@@ -6,6 +6,8 @@ AI and GPU servers often fail on the host side before the GPU looks unhealthy. H
 
 This repo focuses on that seam layer: the host-side failure modes that DCGM and generic `node_exporter` setups do not always emphasize out of the box. For the positioning and tradeoffs, see [Why not just use DCGM or node_exporter?](docs/why-not-dcgm-or-node-exporter.md).
 
+It is intentionally lightweight: shell collectors, systemd scheduling, Prometheus textfile output, and docs that help operators debug the host side before they end up blaming the GPU for the wrong problem.
+
 ## Collection Architecture
 
 ```mermaid

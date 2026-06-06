@@ -6,6 +6,7 @@ LIB_DIR="${LIB_DIR:-${SCRIPT_DIR}/lib}"
 # shellcheck source=scripts/lib/prom.sh
 source "${LIB_DIR}/prom.sh"
 
+# Wrapper-level toggles let operators trade simplicity for concurrency and structured logs.
 OUT_DIR="${OUT_DIR:-/var/lib/node_exporter/textfile_collector}"
 EXPORTERS="${EXPORTERS:-}"
 PARALLEL="${PARALLEL:-0}"

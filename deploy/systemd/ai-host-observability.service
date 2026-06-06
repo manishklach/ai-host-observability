@@ -7,6 +7,7 @@ Wants=network-online.target
 Type=oneshot
 User=root
 Group=root
+# Defaults are safe for single-host installs and can be overridden in collector.conf.
 Environment=OUT_DIR=/var/lib/node_exporter/textfile_collector
 Environment=PARALLEL=0
 Environment=MAX_PARALLEL=0

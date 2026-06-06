@@ -8,6 +8,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      # Keep CI close to the operator install path: syntax, lint, tests, packaging surfaces.
       - uses: actions/checkout@v4
 
       - name: Install test tools
