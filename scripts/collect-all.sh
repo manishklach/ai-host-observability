@@ -158,13 +158,15 @@ run_exporter() {
   if bash "$script_path" >"$body_file" 2>"$stderr_file"; then
     end_ns="$(date +%s%N)"
     duration_s="$(awk -v ns=$((end_ns - start_ns)) 'BEGIN {printf "%.6f", ns/1e9}')"
+    local with_duration_file="${body_file}.with_duration"
     {
       cat -- "$body_file"
       prom_set_timestamp ""
       emit_help "ai_host_exporter_duration_seconds" gauge "Exporter execution duration in seconds."
       emit_metric "ai_host_exporter_duration_seconds" "$duration_s" "exporter=${exporter}"
-    } >"${body_file}.with_duration"
-    write_success_file "$exporter" "${body_file}.with_duration" "$final_file"
+    } >"$with_duration_file"
+    write_success_file "$exporter" "$with_duration_file" "$final_file"
+    rm -f -- "$with_duration_file"
     log_info "exporter completed: ${exporter} (${duration_s}s)"
     return 0
   fi
@@ -175,6 +177,7 @@ run_exporter() {
   if [[ -z "$error_message" ]]; then
     error_message="exporter exited non-zero"
   fi
+  local with_duration_file="${body_file}.with_duration"
   {
     prom_set_timestamp ""
     emit_wrapper_header
@@ -182,8 +185,8 @@ run_exporter() {
     emit_metric "ai_host_exporter_duration_seconds" "$duration_s" "exporter=${exporter}"
     emit_metric "ai_host_exporter_last_run_success" 0 "exporter=${exporter}"
     emit_metric "ai_host_exporter_last_run_error" 1 "exporter=${exporter}" "error=${error_message}"
-  } >"${body_file}.with_duration"
-  mv -f -- "${body_file}.with_duration" "$final_file"
+  } >"$with_duration_file"
+  mv -f -- "$with_duration_file" "$final_file"
   log_error "exporter failed: ${exporter}: ${error_message}"
 }
 
