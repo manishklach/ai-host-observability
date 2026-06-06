@@ -1,0 +1,11 @@
+[Unit]
+Description=Run AI Host Observability collector every minute
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=1min
+AccuracySec=15s
+Unit=ai-host-observability.service
+
+[Install]
+WantedBy=timers.target

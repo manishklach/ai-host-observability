@@ -1,0 +1,74 @@
+# Signals Cheat Sheet
+
+## Hidden Host Memory Pressure
+
+- `nixl_host_fw_pages_total`
+- `nixl_host_fw_pages_sum`
+- `nixl_host_meminfo_bytes{field="memavailable"}`
+- `nixl_host_memory_psi_avg{scope="some",window="10s"}`
+- `nixl_host_vmstat{field="pgscan_direct"}`
+
+## RDMA / NIC Trouble
+
+- `nixl_net_ethtool_stat{stat="link_down_events_phy"}`
+- `nixl_net_ethtool_stat{stat="rx_discards_phy"}`
+- `nixl_infiniband_counter{counter="port_rcv_errors"}`
+- `nixl_infiniband_counter{counter="port_xmit_discards"}`
+
+## CPU and Interrupt Spillover
+
+- `nixl_cpu_psi_avg`
+- `nixl_softirq_total{type="NET_RX"}`
+- `nixl_softirq_total{type="NET_TX"}`
+- `nixl_irq_total`
+
+## NUMA Locality
+
+- `nixl_numa_stat{field="local_node"}`
+- `nixl_numa_stat{field="other_node"}`
+- `nixl_numa_stat{field="numa_miss"}`
+- `nixl_numa_meminfo_bytes{field="memfree"}`
+
+## Kernel Event Scans
+
+- `nixl_kernel_log_pattern_total{pattern="oom"}`
+- `nixl_kernel_log_pattern_total{pattern="pcie_aer"}`
+- `nixl_kernel_log_pattern_total{pattern="vfio"}`
+- `nixl_kernel_log_pattern_total{pattern="iommu_dma"}`
+- `nixl_kernel_log_pattern_total{pattern="rdma_mlx5"}`
+
+## GPU Corroboration
+
+- `nixl_gpu_utilization_percent`
+- `nixl_gpu_memory_used_bytes`
+- `nixl_gpu_bar1_used_bytes`
+- `nixl_gpu_pcie_link_gen`
+- `nixl_gpu_pcie_link_width`
+
+## Filesystem and Disk
+
+- `nixl_diskstat_total{field="ms_io"}`
+- `nixl_filesystem_bytes{field="avail"}`
+- `nixl_file_nr{field="allocated"}`
+- `nixl_inode_nr{field="allocated"}`
+
+## Network Stack
+
+- `nixl_netdev_total{field="rx_drop"}`
+- `nixl_netdev_total{field="tx_drop"}`
+- `nixl_softnet_stat_total{field="dropped"}`
+- `nixl_softnet_stat_total{field="time_squeezed"}`
+- `nixl_snmp_total`
+
+## Process-Level Pinned Memory
+
+- `nixl_process_locked_bytes`
+- `nixl_process_vm_lck_bytes`
+- `nixl_process_pinned_candidates`
+
+## PCIe / VFIO / IOMMU
+
+- `nixl_pcie_device_info`
+- `nixl_vfio_group_devices`
+- `nixl_iommu_group_total`
+- `nixl_module_loaded{module="vfio_pci"}`
