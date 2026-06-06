@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NIXL, NCCL, and UCX: What Each One Does and Why Host Memory Can Blow Up First</title>
+  <meta name="description" content="A detailed explainer on NIXL, NCCL, and UCX: what each one does, where UCX fits, and why host memory can fail before GPU memory looks unhealthy.">
+  <link rel="canonical" href="https://manishklach.github.io/writings/nixl-nccl-ucx-what-each-does-host-memory-blows-up-first.html">
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --surface: #fffdf8;
+      --ink: #1e2430;
+      --muted: #566073;
+      --line: #d8d0c3;
+      --accent: #0f766e;
+      --accent-2: #8a5a0a;
+      --accent-3: #7c2d12;
+      --chip: #efe7d8;
+      --shadow: 0 20px 50px rgba(34, 29, 20, 0.08);
+      --code: #f5efe4;
+      --max: 1120px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 22rem),
+        radial-gradient(circle at left 20%, rgba(138, 90, 10, 0.08), transparent 18rem),
+        var(--bg);
+      color: var(--ink);
+      line-height: 1.65;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+    }
+
+    .page {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 32px 20px 64px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(255, 253, 248, 0.98), rgba(247, 241, 230, 0.98));
+      border: 1px solid rgba(216, 208, 195, 0.9);
+      border-radius: 28px;
+      padding: 40px 36px 32px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -6rem -7rem auto;
+      width: 18rem;
+      height: 18rem;
+      background: radial-gradient(circle, rgba(15, 118, 110, 0.18), transparent 68%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--chip);
+      color: var(--accent-3);
+      font-size: 0.8rem;
+      font-family: Arial, Helvetica, sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.15;
+      margin: 0 0 12px;
+      font-weight: 700;
+    }
+
+    h1 {
+      font-size: clamp(2.3rem, 5vw, 4rem);
+      max-width: 16ch;
+    }
+
+    h2 {
+      margin-top: 44px;
+      font-size: clamp(1.55rem, 2.8vw, 2.15rem);
+    }
+
+    h3 {
+      margin-top: 28px;
+      font-size: 1.18rem;
+    }
+
+    .subtitle {
+      max-width: 70ch;
+      color: var(--muted);
+      font-size: 1.1rem;
+      margin: 16px 0 0;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 22px;
+      margin-top: 28px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(216, 208, 195, 0.95);
+      border-radius: 20px;
+      padding: 18px 18px 16px;
+      box-shadow: 0 10px 30px rgba(32, 28, 19, 0.04);
+    }
+
+    .card h3 {
+      margin-top: 0;
+      font-size: 1rem;
+      font-family: Arial, Helvetica, sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    .toc {
+      margin-top: 28px;
+      display: grid;
+      gap: 8px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .toc a {
+      text-decoration: none;
+      color: var(--ink);
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(239, 231, 216, 0.5);
+      border: 1px solid rgba(216, 208, 195, 0.8);
+    }
+
+    .lede {
+      font-size: 1.08rem;
+      color: var(--ink);
+    }
+
+    .link-strip {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.92rem;
+    }
+
+    .link-strip a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(216, 208, 195, 0.95);
+      background: rgba(255, 255, 255, 0.86);
+      text-decoration: none;
+      color: var(--ink);
+    }
+
+    .section {
+      margin-top: 30px;
+      background: var(--surface);
+      border: 1px solid rgba(216, 208, 195, 0.9);
+      border-radius: 24px;
+      padding: 28px 28px 10px;
+      box-shadow: var(--shadow);
+    }
+
+    .callout {
+      margin: 22px 0;
+      padding: 16px 18px;
+      border-left: 4px solid var(--accent);
+      background: rgba(15, 118, 110, 0.07);
+      border-radius: 0 14px 14px 0;
+    }
+
+    .warning {
+      border-left-color: var(--accent-3);
+      background: rgba(124, 45, 18, 0.06);
+    }
+
+    .grid-3,
+    .grid-2 {
+      display: grid;
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mini {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(245, 239, 228, 0.72));
+    }
+
+    .mini strong {
+      display: block;
+      margin-bottom: 8px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.95rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 22px 0;
+      font-size: 0.97rem;
+      overflow: hidden;
+      border-radius: 16px;
+    }
+
+    thead th {
+      text-align: left;
+      background: #ede4d2;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.82rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #4b5563;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 12px 14px;
+      vertical-align: top;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(245, 239, 228, 0.38);
+    }
+
+    ul, ol {
+      padding-left: 22px;
+    }
+
+    code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      background: var(--code);
+      border: 1px solid rgba(216, 208, 195, 0.8);
+      border-radius: 8px;
+      padding: 0.1rem 0.35rem;
+      font-size: 0.92em;
+    }
+
+    pre {
+      margin: 18px 0;
+      padding: 16px 18px;
+      overflow-x: auto;
+      background: #1f2430;
+      color: #f8fafc;
+      border-radius: 16px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    pre code {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      color: inherit;
+    }
+
+    .stack {
+      margin: 24px 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    .stack-row {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .stack-label {
+      background: #e6efe9;
+      border: 1px solid rgba(15, 118, 110, 0.18);
+      border-radius: 14px;
+      padding: 14px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-weight: 700;
+      color: #134e4a;
+    }
+
+    .stack-body {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+
+    .footer {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid,
+      .grid-3,
+      .grid-2,
+      .stack-row {
+        grid-template-columns: 1fr;
+      }
+
+      .hero,
+      .section {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="eyebrow">Deep Dive</div>
+      <h1>NIXL, NCCL, and UCX</h1>
+      <p class="subtitle">
+        What each one actually does, where they overlap, where they do not, and why a system can run out of host memory long before GPU HBM looks unhealthy.
+      </p>
+
+      <div class="link-strip">
+        <a href="https://manishklach.github.io/writings/nixl-nccl-ucx-what-each-does-host-memory-blows-up-first.html" target="_blank" rel="noreferrer">Published Blog Post</a>
+        <a href="https://github.com/manishklach/ai-host-observability" target="_blank" rel="noreferrer">GitHub Repository</a>
+      </div>
+
+      <div class="hero-grid">
+        <div class="card">
+          <h3>The Short Version</h3>
+          <p class="lede">
+            <strong>NIXL</strong> is an inference-oriented data movement layer. <strong>NCCL</strong> is a GPU collective communication library. <strong>UCX</strong> is a communication framework and transport abstraction that can sit beneath higher-level systems. They solve related but different problems, and mixing them up leads to bad debugging decisions.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Questions This Post Answers</h3>
+          <ul>
+            <li>How does NIXL differ from NCCL?</li>
+            <li>Where does UCX fit in the stack?</li>
+            <li>Why can host memory grow while GPU memory looks normal?</li>
+            <li>What should operators watch first?</li>
+          </ul>
+        </div>
+      </div>
+
+      <nav class="toc" aria-label="Table of contents">
+        <a href="#definitions">1. Definitions and mental model</a>
+        <a href="#nixl-vs-nccl">2. NIXL vs NCCL</a>
+        <a href="#ucx">3. Where UCX fits</a>
+        <a href="#host-memory">4. Why host memory can blow up first</a>
+        <a href="#debugging">5. Practical debugging model</a>
+        <a href="#takeaways">6. Bottom-line takeaways</a>
+        <a href="#sources">7. Sources</a>
+      </nav>
+    </header>
+
+    <section class="section" id="definitions">
+      <h2>1. Definitions and the right mental model</h2>
+      <p>
+        The cleanest way to think about these three technologies is by asking what decision each one is responsible for.
+      </p>
+
+      <div class="stack">
+        <div class="stack-row">
+          <div class="stack-label">NIXL</div>
+          <div class="stack-body">
+            Decides <em>what inference data should move</em>, between which memory or storage tiers, and with which backend. It is oriented around point-to-point transfer in distributed inference workflows, especially tensors and KV cache movement across GPU, DRAM, and storage domains.
+          </div>
+        </div>
+        <div class="stack-row">
+          <div class="stack-label">NCCL</div>
+          <div class="stack-body">
+            Decides <em>how groups of GPUs exchange and reduce data collectively</em>. Its center of gravity is collectives like all-reduce, all-gather, reduce-scatter, broadcast, and related group communication patterns for multi-GPU or multi-node execution.
+          </div>
+        </div>
+        <div class="stack-row">
+          <div class="stack-label">UCX</div>
+          <div class="stack-body">
+            Decides <em>which transport and protocol path to use underneath</em> for efficient messaging and remote-memory movement across RDMA, RoCE, TCP, shared memory, and GPU-aware paths. It is a communication substrate, not an inference policy layer.
+          </div>
+        </div>
+      </div>
+
+      <div class="callout">
+        The biggest mistake people make is treating all three as “GPU networking libraries.” They are not peers at the same abstraction level.
+      </div>
+
+      <div class="grid-3">
+        <div class="mini">
+          <strong>NIXL thinks in inference objects</strong>
+          KV cache, tensors, tiers, staging, asynchronous movement, backend abstraction.
+        </div>
+        <div class="mini">
+          <strong>NCCL thinks in communicator groups</strong>
+          Ranks, collectives, topology-aware bandwidth, GPU-to-GPU synchronization semantics.
+        </div>
+        <div class="mini">
+          <strong>UCX thinks in transports</strong>
+          Tag matching, active messages, RMA, GPU-aware transfers, registration, lanes, protocols.
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="nixl-vs-nccl">
+      <h2>2. How NIXL differs from NCCL</h2>
+      <p>
+        NIXL and NCCL both move data in GPU systems, but they are optimized for different workloads and different communication shapes.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Dimension</th>
+            <th>NIXL</th>
+            <th>NCCL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Primary job</td>
+            <td>Inference-oriented point-to-point data movement across memory and storage tiers</td>
+            <td>Topology-aware multi-GPU collective communication</td>
+          </tr>
+          <tr>
+            <td>Typical data</td>
+            <td>KV cache blocks, tensors, staged inference data</td>
+            <td>Gradients, activations, parameters, sharded tensors, collective payloads</td>
+          </tr>
+          <tr>
+            <td>Typical pattern</td>
+            <td>Peer-to-peer transfer, tiered movement, asynchronous reads and writes</td>
+            <td>All-reduce, broadcast, all-gather, reduce-scatter, send/recv</td>
+          </tr>
+          <tr>
+            <td>Optimization target</td>
+            <td>Flexible movement across heterogeneous memory and storage paths</td>
+            <td>Maximum bandwidth and low latency for GPU group communication</td>
+          </tr>
+          <tr>
+            <td>Scope of abstraction</td>
+            <td>Higher-level data movement API for inference platforms</td>
+            <td>Communication library focused on collective primitives</td>
+          </tr>
+          <tr>
+            <td>Storage awareness</td>
+            <td>Yes, explicitly part of the design</td>
+            <td>No, not its core problem</td>
+          </tr>
+          <tr>
+            <td>Inference workflow fit</td>
+            <td>Very strong for disaggregated serving and KV-cache transfer</td>
+            <td>Useful where inference uses tensor/expert/pipeline parallel collectives</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>NIXL is not “NCCL for inference”</h3>
+      <p>
+        That shorthand is tempting, but it is misleading. NCCL is fundamentally organized around collectives and communicators. NIXL is organized around a more general inference transfer problem: moving data rapidly across GPUs, host memory, and storage tiers using a unified interface and pluggable backends.
+      </p>
+
+      <p>
+        In practical terms, if you are debugging expert parallel all-to-all behavior inside a training or tightly synchronized multi-rank execution, NCCL is usually closer to the center of the problem. If you are debugging disaggregated serving, KV cache handoff, or movement between GPU and non-GPU tiers, NIXL is much more likely to be in the middle of the story.
+      </p>
+
+      <h3>NCCL is not “just a transport” either</h3>
+      <p>
+        NCCL is much higher-level than UCX. It has its own communicator model, launch semantics, collective algorithms, topology logic, and GPU-centric performance strategy. It may use different lower networking paths depending on environment and plugins, but the programming model you interact with is not the same as UCX’s.
+      </p>
+
+      <div class="callout warning">
+        If your workload is mostly “move this KV cache block from here to there,” NIXL is the natural conceptual lens. If it is “synchronize or redistribute state across many ranks efficiently,” NCCL is the natural lens.
+      </div>
+    </section>
+
+    <section class="section" id="ucx">
+      <h2>3. Where UCX fits</h2>
+      <p>
+        UCX is easiest to understand as a communication framework that exposes abstract messaging and memory-access primitives while choosing efficient underlying transports. It supports fabrics like InfiniBand, RoCE, TCP, shared memory, and GPU-aware paths. It also handles many of the details that make modern communication stacks hard: transport selection, protocol choice, registration behavior, memory-type awareness, and zero-copy fast paths.
+      </p>
+
+      <div class="grid-2">
+        <div class="mini">
+          <strong>What UCX is</strong>
+          A framework with APIs such as tag matching, stream send/receive, active messages, remote memory access, and atomics, plus transport logic underneath.
+        </div>
+        <div class="mini">
+          <strong>What UCX is not</strong>
+          It is not an inference policy layer, not a KV-cache manager, and not a collective-communication replacement for NCCL’s main role.
+        </div>
+      </div>
+
+      <h3>How UCX relates to NIXL</h3>
+      <p>
+        NIXL can use UCX as one backend among others. That means NIXL may ask for a transfer at the inference layer, while UCX handles the lower-level communication path used to realize that transfer. In that arrangement, NIXL is the semantic layer and UCX is part of the data-plane machinery.
+      </p>
+
+      <h3>How UCX relates to NCCL</h3>
+      <p>
+        NCCL is not simply “built on UCX” in every setup. The relationship is looser and more deployment-dependent. Some environments integrate NCCL with UCX through plugins or surrounding communication stacks, but NCCL’s core identity remains a collective communication library. So the safe statement is:
+      </p>
+
+      <pre><code>NIXL can use UCX as a backend.
+NCCL can be deployed alongside or over UCX-related paths in some environments.
+UCX is the general transport framework, not the semantic owner of either library.</code></pre>
+
+      <h3>The most useful operator framing</h3>
+      <p>
+        If you are looking at host symptoms like registration growth, pinned memory, multi-rail fan-out, or GPU-aware RDMA path selection, UCX is often the place where the transport mechanics become visible. NIXL or NCCL may be the top-level library your application names, but UCX may be where the memory registration and lane selection behavior actually materializes.
+      </p>
+    </section>
+
+    <section class="section" id="host-memory">
+      <h2>4. Why it can consume host memory even when GPU memory looks fine</h2>
+      <p>
+        This is the part that surprises people most. A system can have apparently healthy GPU HBM usage and still be marching toward a host OOM. That is not contradictory. GPU memory accounting and host memory accounting are not the same thing, and data movement libraries can create substantial host-side state even when the main payload lives on the GPU.
+      </p>
+
+      <h3>The key idea: moving GPU data often requires host-side control structures</h3>
+      <p>
+        When GPU buffers are used with RDMA-capable communication, the stack often needs to register or pin memory and create mapping metadata so the NIC, kernel driver, IOMMU, and communication library know how to access those buffers safely and efficiently. That work is not “free,” and the overhead lives largely on the host side.
+      </p>
+
+      <div class="grid-3">
+        <div class="mini">
+          <strong>GPU HBM</strong>
+          Stores the payload itself: tensors, KV cache, activations, model state fragments.
+        </div>
+        <div class="mini">
+          <strong>Host DRAM</strong>
+          Stores registration metadata, driver state, firmware page tables, caches, descriptors, and orchestration structures.
+        </div>
+        <div class="mini">
+          <strong>NIC / firmware state</strong>
+          Tracks memory regions, access permissions, translation structures, and transfer context.
+        </div>
+      </div>
+
+      <h3>Why the blow-up happens</h3>
+      <ol>
+        <li>A library like NIXL decides a GPU buffer should be remotely accessible.</li>
+        <li>The transport layer, often UCX in relevant deployments, sets up the path.</li>
+        <li>That path may require memory registration or pinning for one or more HCAs.</li>
+        <li>Each registration creates host-side bookkeeping and device-side tracking structures.</li>
+        <li>If the same buffer is registered across many NICs, rails, or memory-region variants, the overhead multiplies.</li>
+      </ol>
+
+      <h3>Why multi-NIC systems are especially vulnerable</h3>
+      <p>
+        Suppose a host has one GPU buffer but eight reachable HCAs. If the software stack decides to register that same buffer across all eight, you do not have one registration cost. You have eight registration costs. If an additional mode or policy causes a second memory-region representation to be created, you now have sixteen units of registration-related overhead for what the application still thinks of as one logical buffer.
+      </p>
+
+      <p>
+        This is exactly why a workload can look modest from the application view but expensive from the host-operator view. The application sees one buffer. The transport and NIC stack may see many registered regions, many lanes, many cached descriptors, and many pages tracked in firmware.
+      </p>
+
+      <h3>Where UCX shows up in that story</h3>
+      <p>
+        UCX explicitly advertises features such as zero-copy with a registration cache, GPU memory handling, and automatic selection of transports and devices. Those are performance features, but they also explain why host-side memory can grow. Fast communication often depends on pre-registered, cached, or otherwise prepared memory paths. The overhead is usually justified by lower transfer latency and higher throughput, but it is still overhead.
+      </p>
+
+      <div class="callout">
+        The punchline is simple: <strong>GPU memory usage tells you how much payload lives on the GPU. It does not tell you how much host-side machinery was created to move that payload efficiently.</strong>
+      </div>
+
+      <h3>What actually consumes host memory</h3>
+      <ul>
+        <li>Memory registration metadata</li>
+        <li>Pinned-page tracking</li>
+        <li>NIC firmware page tables and related accounting</li>
+        <li>Driver-side memory region objects</li>
+        <li>IOMMU and DMA mapping state</li>
+        <li>Transport-layer caches, including registration-related caches</li>
+        <li>Per-rail or per-HCA duplication of otherwise similar state</li>
+      </ul>
+
+      <h3>Why this can happen even when GPU utilization and HBM are stable</h3>
+      <p>
+        A serving stack may stabilize at, say, 60 to 70 percent HBM usage and still continue increasing host pressure over time if the number of active transfers, exposed buffers, reachable HCAs, cached registrations, or orchestration objects keeps growing. That is why operators need to monitor not just GPU memory, but also host <code>MemAvailable</code>, memory PSI, reclaim activity, cgroup memory growth, and transport-specific registration signals.
+      </p>
+
+      <h3>What not to conclude too early</h3>
+      <ul>
+        <li>“GPU memory looks fine, so this cannot be a communication problem.”</li>
+        <li>“The model is not near HBM limits, so the host OOM must be unrelated.”</li>
+        <li>“If UCX or RDMA improves performance, its overhead must be negligible.”</li>
+        <li>“One logical buffer means one host-side registration cost.”</li>
+      </ul>
+    </section>
+
+    <section class="section" id="debugging">
+      <h2>5. A practical debugging model</h2>
+      <p>
+        When you suspect NIXL, NCCL, or UCX is part of a memory-pressure issue, the most useful question is not “which library is bad?” The better question is:
+      </p>
+
+      <pre><code>Which layer owns the semantics,
+which layer owns the transport behavior,
+and which layer owns the host-side accounting that is growing?</code></pre>
+
+      <table>
+        <thead>
+          <tr>
+            <th>If you observe</th>
+            <th>Look first at</th>
+            <th>Why</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>KV cache handoff problems or inference-tier movement issues</td>
+            <td>NIXL</td>
+            <td>That is closest to the inference data movement semantics.</td>
+          </tr>
+          <tr>
+            <td>Collective slowdowns across GPUs or ranks</td>
+            <td>NCCL</td>
+            <td>That is NCCL’s home territory.</td>
+          </tr>
+          <tr>
+            <td>Registration pressure, lane selection, transport duplication, GPU-aware RDMA behavior</td>
+            <td>UCX and the RDMA stack</td>
+            <td>That is where low-level communication mechanics typically become visible.</td>
+          </tr>
+          <tr>
+            <td>Host OOM with normal GPU memory</td>
+            <td>Host memory, cgroups, PSI, reclaim, and registration counters</td>
+            <td>The failure mode is often host-side accounting, not HBM exhaustion.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Operator checklist</h3>
+      <ul>
+        <li>Watch GPU HBM and BAR1, but do not stop there.</li>
+        <li>Track <code>MemAvailable</code>, memory PSI, and reclaim counters on the host.</li>
+        <li>Track transport-specific counters such as <code>mlx5</code> firmware page usage where available.</li>
+        <li>Look for per-cgroup growth if workloads are isolated.</li>
+        <li>Correlate rising host pressure with increased transfer concurrency, KV cache movement, or multi-rail fan-out.</li>
+      </ul>
+
+      <h3>The simplest accurate summary</h3>
+      <p>
+        NIXL can ask for inference-driven data movement. UCX can realize that movement across GPU-aware transports. NCCL solves a different communication problem centered on collectives. And none of these facts prevent the host from becoming the first place your system runs out of memory.
+      </p>
+    </section>
+
+    <section class="section" id="takeaways">
+      <h2>6. Bottom-line takeaways</h2>
+      <div class="grid-2">
+        <div class="mini">
+          <strong>NIXL vs NCCL</strong>
+          NIXL is about inference data movement across memory and storage tiers. NCCL is about collective communication across GPUs and ranks.
+        </div>
+        <div class="mini">
+          <strong>Where UCX fits</strong>
+          UCX is the transport and communication framework layer that higher-level systems can use to implement fast GPU-aware data movement.
+        </div>
+        <div class="mini">
+          <strong>Why host memory can fail first</strong>
+          Registration, pinning, mapping, and firmware accounting live on the host side even when the payload itself lives in GPU memory.
+        </div>
+        <div class="mini">
+          <strong>What operators should remember</strong>
+          Healthy HBM graphs do not rule out a transport-driven host OOM.
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="sources">
+      <h2>7. Sources</h2>
+      <p>
+        This article is based on official project documentation and primary sources:
+      </p>
+      <ul>
+        <li><a href="https://github.com/ai-dynamo/nixl" target="_blank" rel="noreferrer">ai-dynamo/nixl GitHub repository</a></li>
+        <li><a href="https://github.com/ai-dynamo/nixl/blob/main/docs/nixl.md" target="_blank" rel="noreferrer">NIXL architecture overview</a></li>
+        <li><a href="https://developer.nvidia.com/cuda/cuda-x-libraries" target="_blank" rel="noreferrer">NVIDIA CUDA-X libraries page</a></li>
+        <li><a href="https://developer.nvidia.com/blog/introducing-nvidia-dynamo-a-low-latency-distributed-inference-framework-for-scaling-reasoning-ai-models/" target="_blank" rel="noreferrer">NVIDIA Dynamo introduction</a></li>
+        <li><a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/index.html" target="_blank" rel="noreferrer">NCCL user guide</a></li>
+        <li><a href="https://openucx.readthedocs.io/en/master/" target="_blank" rel="noreferrer">OpenUCX documentation</a></li>
+        <li><a href="https://openucx.readthedocs.io/en/master/faq.html" target="_blank" rel="noreferrer">UCX FAQ</a></li>
+        <li><a href="https://openucx.readthedocs.io/en/master/ucx_features.html" target="_blank" rel="noreferrer">UCX main features</a></li>
+      </ul>
+
+      <p class="footer">
+        Notes: This article is intentionally opinionated about abstraction boundaries. Where deployments vary, the wording is careful: NIXL can use UCX as a backend, and NCCL can coexist with or be deployed through UCX-related paths in some environments, but the three are not interchangeable.
+      </p>
+      <p class="footer">
+        Canonical published URL: <a href="https://manishklach.github.io/writings/nixl-nccl-ucx-what-each-does-host-memory-blows-up-first.html" target="_blank" rel="noreferrer">manishklach.github.io/writings/nixl-nccl-ucx-what-each-does-host-memory-blows-up-first.html</a><br>
+        Source repository: <a href="https://github.com/manishklach/ai-host-observability" target="_blank" rel="noreferrer">github.com/manishklach/ai-host-observability</a>
+      </p>
+    </section>
+  </div>
+</body>
+</html>
