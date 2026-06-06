@@ -9,7 +9,9 @@ description: "Prometheus-friendly Linux host observability for AI and GPU infras
 vendor: "manishklach"
 homepage: "https://github.com/manishklach/ai-host-observability"
 license: "MIT"
-format: "deb,rpm"
+formats:
+  - deb
+  - rpm
 contents:
   - src: "/opt/ai-host-observability"
     dst: "/opt/ai-host-observability"
@@ -17,14 +19,14 @@ contents:
   - src: "deploy/systemd/dropins/collector.conf.example"
     dst: "/etc/ai-host-observability/collector.conf.example"
     type: "file"
-    config: "noreplace"
+    config: true
   - src: "deploy/systemd/dropins/timer.conf.example"
     dst: "/etc/ai-host-observability/timer.conf.example"
     type: "file"
-    config: "noreplace"
+    config: true
 scripts:
   postinstall: "deploy/systemd/postinst.sh"
-  preuninstall: "deploy/systemd/preun.sh"
+  preun: "deploy/systemd/preun.sh"
 overrides:
   deb:
     depends:
