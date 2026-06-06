@@ -51,4 +51,4 @@ for idx in "${!patterns[@]}"; do
   emit_metric "nixl_kernel_log_pattern_total" "$count" "pattern=${names[$idx]}"
 done
 
-prom_end_scrape
+prom_end_scrape "nixl_kernel_log_scan_success"

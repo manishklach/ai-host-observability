@@ -23,7 +23,7 @@ emit_help "nixl_numa_hugepages" gauge "Selected per-node hugepage counts."
 shopt -s nullglob
 for meminfo in "${SYS_ROOT}"/devices/system/node/node*/meminfo; do
   node="$(basename "$(dirname "$meminfo")")"
-  while read -r _node _id key value unit; do
+  while read -r _node _id key value _unit; do
     case "$key" in
       MemFree:|MemUsed:|FilePages:)
         is_integer "$value" && emit_metric "nixl_numa_meminfo_bytes" "$((value * 1024))" "node=${node}" "field=$(tr '[:upper:]' '[:lower:]' <<<"${key%:}")"
@@ -48,4 +48,4 @@ for numastat in "${SYS_ROOT}"/devices/system/node/node*/numastat; do
 done
 shopt -u nullglob
 
-prom_end_scrape
+prom_end_scrape "nixl_numa_scrape_success"

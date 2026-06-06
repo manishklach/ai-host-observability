@@ -65,4 +65,4 @@ if command_exists "$NVIDIA_SMI"; then
   done < <("$NVIDIA_SMI" --query-gpu="$query" --format=csv,noheader,nounits 2>/dev/null || true)
 fi
 
-prom_end_scrape
+prom_end_scrape "nixl_gpu_scrape_success"

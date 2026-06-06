@@ -67,7 +67,7 @@ write_success_file() {
 
   {
     cat -- "$source_file"
-    prom_set_timestamp
+    prom_set_timestamp ""
     emit_wrapper_header
     emit_metric "ai_host_exporter_last_run_success" 1 "exporter=${exporter}"
   } >"$tmp_file"
@@ -83,7 +83,7 @@ write_failure_file() {
   new_tmp_file
   tmp_file="$NEW_TMP_FILE"
 
-  prom_set_timestamp
+  prom_set_timestamp ""
   {
     emit_wrapper_header
     emit_metric "ai_host_exporter_last_run_success" 0 "exporter=${exporter}"

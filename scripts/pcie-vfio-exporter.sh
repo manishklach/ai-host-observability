@@ -61,4 +61,4 @@ if [[ -r "${PROC_ROOT}/modules" ]]; then
   done
 fi
 
-prom_end_scrape
+prom_end_scrape "nixl_pcie_scrape_success"

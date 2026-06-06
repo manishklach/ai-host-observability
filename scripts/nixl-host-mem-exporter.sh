@@ -119,4 +119,4 @@ if [[ -n "${CGROUP_PATH:-}" && -d "${CGROUP_PATH}" ]]; then
     "path=${CGROUP_PATH}"
 fi
 
-prom_end_scrape
+prom_end_scrape "nixl_host_scrape_success"

@@ -50,4 +50,4 @@ while IFS=$'\t' read -r locked_kb vm_lck_kb pid comm; do
   ((vm_lck_kb > 0)) && emit_metric "nixl_process_vm_lck_bytes" "$((vm_lck_kb * 1024))" "pid=${pid}" "comm=${comm}"
 done < <(sort -rn "$tmpfile" | head -n "$TOP_N")
 
-prom_end_scrape
+prom_end_scrape "nixl_process_memory_scrape_success"

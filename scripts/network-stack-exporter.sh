@@ -23,10 +23,14 @@ if [[ -r "${PROC_ROOT}/net/dev" ]]; then
     iface="$(xargs <<<"${line%%:*}")"
     rest="${line#*:}"
     read -r rx_bytes rx_packets rx_errs rx_drop _ _ _ _ tx_bytes tx_packets tx_errs tx_drop _ _ _ _ <<<"$rest"
-    for item in rx_bytes rx_packets rx_errs rx_drop tx_bytes tx_packets tx_errs tx_drop; do
-      value="${!item}"
-      is_integer "$value" && emit_metric "nixl_netdev_total" "$value" "iface=${iface}" "field=${item}"
-    done
+    is_integer "$rx_bytes" && emit_metric "nixl_netdev_total" "$rx_bytes" "iface=${iface}" "field=rx_bytes"
+    is_integer "$rx_packets" && emit_metric "nixl_netdev_total" "$rx_packets" "iface=${iface}" "field=rx_packets"
+    is_integer "$rx_errs" && emit_metric "nixl_netdev_total" "$rx_errs" "iface=${iface}" "field=rx_errs"
+    is_integer "$rx_drop" && emit_metric "nixl_netdev_total" "$rx_drop" "iface=${iface}" "field=rx_drop"
+    is_integer "$tx_bytes" && emit_metric "nixl_netdev_total" "$tx_bytes" "iface=${iface}" "field=tx_bytes"
+    is_integer "$tx_packets" && emit_metric "nixl_netdev_total" "$tx_packets" "iface=${iface}" "field=tx_packets"
+    is_integer "$tx_errs" && emit_metric "nixl_netdev_total" "$tx_errs" "iface=${iface}" "field=tx_errs"
+    is_integer "$tx_drop" && emit_metric "nixl_netdev_total" "$tx_drop" "iface=${iface}" "field=tx_drop"
   done < <(tail -n +3 "${PROC_ROOT}/net/dev")
 fi
 
@@ -59,4 +63,4 @@ if [[ -r "${PROC_ROOT}/net/snmp" ]]; then
   ' "${PROC_ROOT}/net/snmp")
 fi
 
-prom_end_scrape
+prom_end_scrape "nixl_network_stack_scrape_success"

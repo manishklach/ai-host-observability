@@ -76,4 +76,4 @@ if [[ -r "${PROC_ROOT}/loadavg" ]]; then
   is_number "$load15" && emit_metric "nixl_loadavg" "$load15" "window=15m"
 fi
 
-prom_end_scrape
+prom_end_scrape "nixl_cpu_scrape_success"

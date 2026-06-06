@@ -82,4 +82,4 @@ for ibdev in "${SYS_ROOT}"/class/infiniband/*; do
 done
 shopt -u nullglob
 
-prom_end_scrape
+prom_end_scrape "nixl_rdma_scrape_success"
