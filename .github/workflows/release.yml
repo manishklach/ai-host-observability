@@ -43,8 +43,8 @@ jobs:
 
       - name: Install nfpm
         run: |
-          NFFM_VERSION="2.46.3"
-          curl -sSL -o /tmp/nfpm.deb "https://github.com/goreleaser/nfpm/releases/download/v${NFFM_VERSION}/nfpm_${NFFM_VERSION}_linux_amd64.deb"
+          NFPM_VERSION="2.46.3"
+          curl -sSL -o /tmp/nfpm.deb "https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_${NFPM_VERSION}_amd64.deb"
           sudo dpkg -i /tmp/nfpm.deb
 
       - name: Build DEB/RPM packages
