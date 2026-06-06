@@ -1,7 +1,39 @@
 PREFIX ?= /opt/ai-host-observability
 SYSTEMD_DIR ?= /etc/systemd/system
 
-.PHONY: test test-bats lint smoke install uninstall format
+.PHONY: test test-bats lint smoke install uninstall format check-deps
+
+check-deps:
+	@echo "Checking required dependencies..."
+	@missing=0; \
+	for cmd in bash node_exporter journalctl ethtool; do \
+		if ! command -v "$$cmd" >/dev/null 2>&1; then \
+			echo "  MISSING: $$cmd"; \
+			missing=1; \
+		else \
+			echo "  FOUND: $$cmd"; \
+		fi; \
+	done; \
+	for opt in nvidia-smi rocm-smi intel_gpu_top; do \
+		if command -v "$$opt" >/dev/null 2>&1; then \
+			echo "  FOUND (optional): $$opt"; \
+		else \
+			echo "  NOT FOUND (optional): $$opt"; \
+		fi; \
+	done; \
+	if mountpoint -q /sys/kernel/debug 2>/dev/null; then \
+		echo "  FOUND: debugfs mounted at /sys/kernel/debug"; \
+	else \
+		echo "  NOT FOUND: debugfs not mounted (fw_pages_total unavailable)"; \
+	fi; \
+	if [[ -f /sys/fs/cgroup/memory.current ]]; then \
+		echo "  FOUND: cgroup v2 memory controller"; \
+	elif [[ -f /sys/fs/cgroup/memory/memory.usage_in_bytes ]]; then \
+		echo "  FOUND: cgroup v1 memory controller"; \
+	else \
+		echo "  NOT FOUND: cgroup memory controller"; \
+	fi; \
+	exit $$missing
 
 test:
 	@if ! command -v bats >/dev/null 2>&1; then \

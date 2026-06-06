@@ -1,0 +1,18 @@
+# AI Host Observability Collector Configuration
+# Copy to /etc/ai-host-observability/collector.conf and edit as needed
+# Then run: systemctl daemon-reload && systemctl restart ai-host-observability.service
+
+# Enable parallel execution of exporters (0=sequential, 1=parallel)
+# PARALLEL=1
+
+# Maximum parallel exporters when PARALLEL=1 (0=unlimited)
+# MAX_PARALLEL=4
+
+# Log format: text or json
+# LOG_FORMAT=json
+
+# Custom output directory (default: /var/lib/node_exporter/textfile_collector)
+# OUT_DIR=/custom/path
+
+# Comma-separated list of exporters to run (default: all)
+# EXPORTERS=nixl_host_mem,nixl_rdma_link,nixl_gpu

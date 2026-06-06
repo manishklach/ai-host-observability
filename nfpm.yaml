@@ -1,0 +1,48 @@
+name: "ai-host-observability"
+arch: "amd64"
+platform: "linux"
+version: "${VERSION}"
+section: "monitoring"
+priority: "extra"
+maintainer: "Manish KL <manishklach@gmail.com>"
+description: "Prometheus-friendly Linux host observability for AI and GPU infrastructure"
+vendor: "manishklach"
+homepage: "https://github.com/manishklach/ai-host-observability"
+license: "MIT"
+format: "deb,rpm"
+contents:
+  - src: "/opt/ai-host-observability"
+    dst: "/opt/ai-host-observability"
+    type: "tree"
+  - src: "deploy/systemd/dropins/collector.conf.example"
+    dst: "/etc/ai-host-observability/collector.conf.example"
+    type: "file"
+    config: "noreplace"
+  - src: "deploy/systemd/dropins/timer.conf.example"
+    dst: "/etc/ai-host-observability/timer.conf.example"
+    type: "file"
+    config: "noreplace"
+scripts:
+  postinstall: "deploy/systemd/postinst.sh"
+  preuninstall: "deploy/systemd/preun.sh"
+overrides:
+  deb:
+    depends:
+      - "bash"
+      - "node-exporter"
+      - "systemd"
+    recommends:
+      - "ethtool"
+      - "nvidia-utils-535 | nvidia-utils-525 | nvidia-utils-470"
+      - "rocm-smi"
+      - "intel-gpu-tools"
+  rpm:
+    depends:
+      - "bash"
+      - "node_exporter"
+      - "systemd"
+    recommends:
+      - "ethtool"
+      - "nvidia-driver"
+      - "rocm-smi"
+      - "intel-gpu-tools"

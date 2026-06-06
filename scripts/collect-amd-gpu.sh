@@ -16,10 +16,15 @@ emit_help "nixl_gpu_temperature_celsius" gauge "GPU temperature in Celsius."
 emit_help "nixl_gpu_memory_used_bytes" gauge "GPU memory used in bytes."
 emit_help "nixl_gpu_memory_total_bytes" gauge "GPU memory total in bytes."
 emit_help "nixl_gpu_utilization_percent" gauge "GPU utilization percent."
+emit_help "nixl_amd_gpu_rocm_smi_version" gauge "rocm-smi version detected."
 
 if ! command_exists "$ROCM_SMI"; then
+  emit_metric "nixl_amd_gpu_rocm_smi_version" 0 "version=unavailable"
   exit 0
 fi
+
+rocm_version="$("$ROCM_SMI" --version 2>/dev/null | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")"
+emit_metric "nixl_amd_gpu_rocm_smi_version" 1 "version=${rocm_version}"
 
 "$ROCM_SMI" --showallinfo --json 2>/dev/null | python3 -c '
 import json

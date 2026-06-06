@@ -8,6 +8,9 @@ source "${LIB_DIR}/prom.sh"
 
 OUT_DIR="${OUT_DIR:-/var/lib/node_exporter/textfile_collector}"
 EXPORTERS="${EXPORTERS:-}"
+PARALLEL="${PARALLEL:-0}"
+MAX_PARALLEL="${MAX_PARALLEL:-0}"
+LOG_FORMAT="${LOG_FORMAT:-text}"
 
 declare -a TMP_FILES=()
 declare -a DEFAULT_EXPORTERS=(
@@ -46,6 +49,46 @@ cleanup() {
   fi
 }
 trap cleanup EXIT
+
+json_escape() {
+  local str="$1"
+  str="${str//\\/\\\\}"
+  str="${str//\"/\\\"}"
+  str="${str//$'\n'/\\n}"
+  str="${str//$'\r'/\\r}"
+  str="${str//$'\t'/\\t}"
+  printf '%s' "$str"
+}
+
+log_info() {
+  local msg="$1"
+  local timestamp
+  timestamp="$(date -Iseconds)"
+  if [[ "$LOG_FORMAT" == "json" ]]; then
+    if command_exists jq; then
+      printf '{"level":"info","timestamp":"%s","message":%s}\n' "$timestamp" "$(jq -n --arg m "$msg" '$m')"
+    else
+      printf '{"level":"info","timestamp":"%s","message":"%s"}\n' "$timestamp" "$(json_escape "$msg")"
+    fi
+  else
+    printf '[%s] INFO %s\n' "$timestamp" "$msg"
+  fi
+}
+
+log_error() {
+  local msg="$1"
+  local timestamp
+  timestamp="$(date -Iseconds)"
+  if [[ "$LOG_FORMAT" == "json" ]]; then
+    if command_exists jq; then
+      printf '{"level":"error","timestamp":"%s","message":%s}\n' "$timestamp" "$(jq -n --arg m "$msg" '$m')"
+    else
+      printf '{"level":"error","timestamp":"%s","message":"%s"}\n' "$timestamp" "$(json_escape "$msg")"
+    fi
+  else
+    printf '[%s] ERROR %s\n' "$timestamp" "$msg" >&2
+  fi
+}
 
 new_tmp_file() {
   NEW_TMP_FILE="$(mktemp "${OUT_DIR}/.ai-host-observability.XXXXXX")"
@@ -98,6 +141,7 @@ run_exporter() {
   local script_name="${EXPORTER_SCRIPTS[$exporter]}"
   local script_path="${SCRIPT_DIR}/${script_name}"
   local body_file stderr_file final_file error_message
+  local start_ns end_ns duration_s
 
   final_file="${OUT_DIR}/${exporter}.prom"
   new_tmp_file
@@ -110,17 +154,37 @@ run_exporter() {
     return 0
   fi
 
+  start_ns="$(date +%s%N)"
   if bash "$script_path" >"$body_file" 2>"$stderr_file"; then
-    write_success_file "$exporter" "$body_file" "$final_file"
+    end_ns="$(date +%s%N)"
+    duration_s="$(awk -v ns=$((end_ns - start_ns)) 'BEGIN {printf "%.6f", ns/1e9}')"
+    {
+      cat -- "$body_file"
+      prom_set_timestamp ""
+      emit_help "ai_host_exporter_duration_seconds" gauge "Exporter execution duration in seconds."
+      emit_metric "ai_host_exporter_duration_seconds" "$duration_s" "exporter=${exporter}"
+    } >"${body_file}.with_duration"
+    write_success_file "$exporter" "${body_file}.with_duration" "$final_file"
+    log_info "exporter completed: ${exporter} (${duration_s}s)"
     return 0
   fi
 
+  end_ns="$(date +%s%N)"
+  duration_s="$(awk -v ns=$((end_ns - start_ns)) 'BEGIN {printf "%.6f", ns/1e9}')"
   error_message="$(tr '\r' ' ' <"$stderr_file" | head -n 1)"
   if [[ -z "$error_message" ]]; then
     error_message="exporter exited non-zero"
   fi
-  write_failure_file "$exporter" "$error_message" "$final_file"
-  printf 'exporter failed: %s: %s\n' "$exporter" "$error_message" >&2
+  {
+    prom_set_timestamp ""
+    emit_wrapper_header
+    emit_help "ai_host_exporter_duration_seconds" gauge "Exporter execution duration in seconds."
+    emit_metric "ai_host_exporter_duration_seconds" "$duration_s" "exporter=${exporter}"
+    emit_metric "ai_host_exporter_last_run_success" 0 "exporter=${exporter}"
+    emit_metric "ai_host_exporter_last_run_error" 1 "exporter=${exporter}" "error=${error_message}"
+  } >"${body_file}.with_duration"
+  mv -f -- "${body_file}.with_duration" "$final_file"
+  log_error "exporter failed: ${exporter}: ${error_message}"
 }
 
 select_exporters() {
@@ -131,13 +195,46 @@ select_exporters() {
   fi
 }
 
+run_exporters_parallel() {
+  local -a pids=()
+  local max_parallel="${MAX_PARALLEL}"
+  if [[ "$max_parallel" -le 0 ]]; then
+    max_parallel="${#SELECTED_EXPORTERS[@]}"
+  fi
+
+  for exporter in "${SELECTED_EXPORTERS[@]}"; do
+    if [[ -z "${EXPORTER_SCRIPTS[$exporter]:-}" ]]; then
+      write_failure_file "$exporter" "unknown exporter" "${OUT_DIR}/${exporter}.prom"
+      continue
+    fi
+
+    while ((${#pids[@]} >= max_parallel)); do
+      wait -n
+      pids=("${pids[@]##*[!0-9]*}")
+    done
+
+    run_exporter "$exporter" &
+    pids+=("$!")
+  done
+
+  for pid in "${pids[@]}"; do
+    wait "$pid"
+  done
+}
+
 mkdir -p -- "$OUT_DIR"
 select_exporters
 
-for exporter in "${SELECTED_EXPORTERS[@]}"; do
-  if [[ -z "${EXPORTER_SCRIPTS[$exporter]:-}" ]]; then
-    write_failure_file "$exporter" "unknown exporter" "${OUT_DIR}/${exporter}.prom"
-    continue
-  fi
-  run_exporter "$exporter"
-done
+log_info "starting collection run with ${#SELECTED_EXPORTERS[@]} exporters (parallel=${PARALLEL})"
+
+if [[ "$PARALLEL" == "1" ]]; then
+  run_exporters_parallel
+else
+  for exporter in "${SELECTED_EXPORTERS[@]}"; do
+    if [[ -z "${EXPORTER_SCRIPTS[$exporter]:-}" ]]; then
+      write_failure_file "$exporter" "unknown exporter" "${OUT_DIR}/${exporter}.prom"
+      continue
+    fi
+    run_exporter "$exporter"
+  done
+fi

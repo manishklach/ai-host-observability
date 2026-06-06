@@ -78,6 +78,17 @@ if [[ -r "${PROC_ROOT}/meminfo" ]]; then
   done <"${PROC_ROOT}/meminfo"
 fi
 
+emit_help "nixl_host_uptime_seconds" gauge "Host uptime in seconds from /proc/uptime."
+emit_help "nixl_host_boot_time_seconds" gauge "Host boot timestamp (unix epoch) derived from uptime."
+if [[ -r "${PROC_ROOT}/uptime" ]]; then
+  read -r uptime_sec _ <"${PROC_ROOT}/uptime"
+  if is_number "$uptime_sec"; then
+    emit_metric "nixl_host_uptime_seconds" "$uptime_sec"
+    boot_time="$(awk -v up="$uptime_sec" 'BEGIN {printf "%.0f", systime() - up}')"
+    emit_metric "nixl_host_boot_time_seconds" "$boot_time"
+  fi
+fi
+
 emit_help "nixl_host_memory_psi_avg" gauge "Memory PSI rolling averages from ${PROC_ROOT}/pressure/memory."
 emit_help "nixl_host_memory_psi_total" counter "Memory PSI total stall time in microseconds."
 emit_psi_metrics "${PROC_ROOT}/pressure/memory" "nixl_host_memory_psi_avg" "nixl_host_memory_psi_total"
@@ -93,30 +104,81 @@ if [[ -r "${PROC_ROOT}/vmstat" ]]; then
   done <"${PROC_ROOT}/vmstat"
 fi
 
+detect_cgroup_version() {
+  local path="$1"
+  if [[ -f "${path}/memory.current" && -f "${path}/memory.events" ]]; then
+    echo "v2"
+  elif [[ -f "${path}/memory/memory.usage_in_bytes" && -f "${path}/memory/memory.events" ]]; then
+    echo "v1"
+  else
+    echo "unknown"
+  fi
+}
+
+read_cgroup_v1_memory() {
+  local path="$1"
+  local current events_file
+  current="$(safe_read_file "${path}/memory/memory.usage_in_bytes" || true)"
+  is_integer "$current" && emit_metric "nixl_host_cgroup_memory_current_bytes" "$current" "path=${path}"
+
+  events_file="${path}/memory/memory.events"
+  if [[ -r "$events_file" ]]; then
+    while read -r key value; do
+      case "$key" in
+        low|high|max|oom|oom_kill)
+          is_integer "$value" && emit_metric "nixl_host_cgroup_memory_events" "$value" "path=${path}" "event=${key}"
+          ;;
+      esac
+    done <"$events_file"
+  fi
+
+  emit_psi_metrics \
+    "${path}/memory/memory.pressure" \
+    "nixl_host_cgroup_memory_pressure_avg" \
+    "nixl_host_cgroup_memory_pressure_total" \
+    "path=${path}"
+}
+
+read_cgroup_v2_memory() {
+  local path="$1"
+  local value
+  value="$(safe_read_file "${path}/memory.current" || true)"
+  is_integer "$value" && emit_metric "nixl_host_cgroup_memory_current_bytes" "$value" "path=${path}"
+
+  if [[ -r "${path}/memory.events" ]]; then
+    while read -r key value; do
+      case "$key" in
+        low|high|max|oom|oom_kill)
+          is_integer "$value" && emit_metric "nixl_host_cgroup_memory_events" "$value" "path=${path}" "event=${key}"
+          ;;
+      esac
+    done <"${path}/memory.events"
+  fi
+
+  emit_psi_metrics \
+    "${path}/memory.pressure" \
+    "nixl_host_cgroup_memory_pressure_avg" \
+    "nixl_host_cgroup_memory_pressure_total" \
+    "path=${path}"
+}
+
 if [[ -n "${CGROUP_PATH:-}" && -d "${CGROUP_PATH}" ]]; then
-  emit_help "nixl_host_cgroup_memory_current_bytes" gauge "memory.current for the configured cgroup path."
+  emit_help "nixl_host_cgroup_memory_current_bytes" gauge "memory.current for the configured cgroup path (cgroup v1/v2)."
   emit_help "nixl_host_cgroup_memory_events" counter "Selected memory.events counters for the configured cgroup path."
   emit_help "nixl_host_cgroup_memory_pressure_avg" gauge "Memory PSI rolling averages for the configured cgroup path."
   emit_help "nixl_host_cgroup_memory_pressure_total" counter "Memory PSI total stall time in microseconds for the configured cgroup path."
 
-  value="$(safe_read_file "${CGROUP_PATH}/memory.current" || true)"
-  is_integer "$value" && emit_metric "nixl_host_cgroup_memory_current_bytes" "$value" "path=${CGROUP_PATH}"
-
-  if [[ -r "${CGROUP_PATH}/memory.events" ]]; then
-    while read -r key value; do
-      case "$key" in
-        low|high|max|oom|oom_kill)
-          is_integer "$value" && emit_metric "nixl_host_cgroup_memory_events" "$value" "path=${CGROUP_PATH}" "event=${key}"
-          ;;
-      esac
-    done <"${CGROUP_PATH}/memory.events"
-  fi
-
-  emit_psi_metrics \
-    "${CGROUP_PATH}/memory.pressure" \
-    "nixl_host_cgroup_memory_pressure_avg" \
-    "nixl_host_cgroup_memory_pressure_total" \
-    "path=${CGROUP_PATH}"
+  cgroup_version="$(detect_cgroup_version "${CGROUP_PATH}")"
+  case "$cgroup_version" in
+    v1)
+      read_cgroup_v1_memory "${CGROUP_PATH}"
+      ;;
+    v2)
+      read_cgroup_v2_memory "${CGROUP_PATH}"
+      ;;
+    *)
+      ;;
+  esac
 fi
 
 prom_end_scrape "nixl_host_scrape_success"

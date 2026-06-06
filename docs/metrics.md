@@ -8,6 +8,35 @@ This document is the metric contract for `ai-host-observability`.
 - Labels may be added, but existing labels should not be removed without a changelog note.
 - Missing hardware should emit exporter scrape success and zero or absent hardware-specific metrics rather than hard-fail the exporter.
 
+## Cardinality Guidance
+
+The following metrics can produce high cardinality depending on your environment. Consider relabeling or dropping in Prometheus `metric_relabel_configs` if cardinality becomes an issue.
+
+| Metric | Cardinality Source | Typical Cardinality | Recommendation |
+|--------|-------------------|---------------------|----------------|
+| `nixl_process_locked_bytes` | `pid`, `comm` | O(processes) ~ 100-1000 | Drop if not needed; keep top-N by value via `topk` |
+| `nixl_process_vm_lck_bytes` | `pid`, `comm` | O(processes) ~ 100-1000 | Same as above |
+| `nixl_infiniband_counter` | `device`, `port`, `counter` | O(devices × ports × counters) ~ 10-50 | Usually fine |
+| `nixl_net_ethtool_stat` | `iface`, `stat` | O(interfaces × stats) ~ 20-200 | Usually fine |
+| `nixl_numa_stat` | `node`, `field` | O(nodes × fields) ~ 10-50 | Usually fine |
+| `nixl_pcie_device_info` | `bdf`, `driver`, `vendor`, `device`, `numa_node` | O(pci_devices) ~ 10-100 | Usually fine |
+| `nixl_gpu_*` | `vendor`, `index`, `uuid` | O(gpus) ~ 1-8 | Usually fine |
+| `nixl_softnet_stat_total` | `cpu`, `field` | O(cpus) ~ 1-256 | Usually fine |
+| `nixl_irq_total` | `irq`, `source` | O(irqs) ~ 50-500 | Drop if not needed |
+
+For `nixl_process_*` metrics, consider adding a `metric_relabel_configs` rule to keep only processes with locked memory > threshold:
+
+```yaml
+metric_relabel_configs:
+  - source_labels: [__name__]
+    regex: 'nixl_process_locked_bytes'
+    action: keep
+  - source_labels: [__name__, pid]
+    regex: 'nixl_process_locked_bytes;(.+)'
+    action: labeldrop
+    # Or use metric_relabel to drop low-value series
+```
+
 ## Wrapper Metrics
 
 ### `ai_host_exporter_last_run_success`
@@ -79,6 +108,26 @@ This document is the metric contract for `ai-host-observability`.
 - Interpretation: selected host free-memory components
 - Example alert: `nixl_host_meminfo_bytes{field="memavailable"} < 8e9`
 
+### `nixl_host_uptime_seconds`
+
+- Type: `gauge`
+- Labels: none
+- Unit: seconds
+- Source: `${PROC_ROOT}/uptime`
+- When absent: uptime unavailable
+- Interpretation: host uptime in seconds
+- Use case: detect recent reboots, correlate with incident start time
+
+### `nixl_host_boot_time_seconds`
+
+- Type: `gauge`
+- Labels: none
+- Unit: unix timestamp (seconds)
+- Source: derived from `${PROC_ROOT}/uptime`
+- When absent: uptime unavailable
+- Interpretation: host boot time as unix epoch
+- Use case: join with other boot-time metrics, detect unexpected reboots
+
 ### `nixl_host_memory_psi_avg`
 
 - Type: `gauge`
@@ -113,16 +162,16 @@ This document is the metric contract for `ai-host-observability`.
 - Type: `gauge`
 - Labels: `path`
 - Unit: bytes
-- Source: `${CGROUP_PATH}/memory.current`
+- Source: `${CGROUP_PATH}/memory.current` (cgroup v2) or `${CGROUP_PATH}/memory/memory.usage_in_bytes` (cgroup v1)
 - When absent: `CGROUP_PATH` unset or file missing
-- Interpretation: cgroup memory footprint
+- Interpretation: cgroup memory footprint (supports both cgroup v1 and v2)
 
 ### `nixl_host_cgroup_memory_events`
 
 - Type: `counter`
 - Labels: `path`, `event`
 - Unit: events
-- Source: `${CGROUP_PATH}/memory.events`
+- Source: `${CGROUP_PATH}/memory.events` (cgroup v2) or `${CGROUP_PATH}/memory/memory.events` (cgroup v1)
 - When absent: `CGROUP_PATH` unset or file missing
 - Interpretation: cgroup low/high/max/oom activity
 - Example alert: `increase(nixl_host_cgroup_memory_events{event="oom_kill"}[10m]) > 0`
@@ -132,7 +181,7 @@ This document is the metric contract for `ai-host-observability`.
 - Type: `gauge`
 - Labels: `path`, `scope`, `window`
 - Unit: percent
-- Source: `${CGROUP_PATH}/memory.pressure`
+- Source: `${CGROUP_PATH}/memory.pressure` (cgroup v2) or `${CGROUP_PATH}/memory/memory.pressure` (cgroup v1)
 - When absent: `CGROUP_PATH` unset or file missing
 - Interpretation: cgroup-specific memory pressure
 
@@ -141,7 +190,7 @@ This document is the metric contract for `ai-host-observability`.
 - Type: `counter`
 - Labels: `path`, `scope`
 - Unit: microseconds
-- Source: `${CGROUP_PATH}/memory.pressure`
+- Source: `${CGROUP_PATH}/memory.pressure` (cgroup v2) or `${CGROUP_PATH}/memory/memory.pressure` (cgroup v1)
 - When absent: `CGROUP_PATH` unset or file missing
 - Interpretation: cumulative cgroup memory stall time
 
@@ -439,6 +488,15 @@ This document is the metric contract for `ai-host-observability`.
 - When absent: exporter failed before emitting output
 - Interpretation: AMD collector completed; `0` may also indicate `rocm-smi` is unavailable
 
+### `nixl_amd_gpu_rocm_smi_version`
+
+- Type: `gauge`
+- Labels: `version`
+- Unit: boolean `0/1`
+- Source: `scripts/collect-amd-gpu.sh`
+- When absent: `rocm-smi` unavailable
+- Interpretation: rocm-smi version detected; `version=unavailable` when binary missing
+
 ### `nixl_intel_gpu_scrape_success`
 
 - Type: `gauge`
@@ -447,6 +505,15 @@ This document is the metric contract for `ai-host-observability`.
 - Source: `scripts/collect-intel-gpu.sh`
 - When absent: exporter failed before emitting output
 - Interpretation: Intel collector completed; `0` may also indicate `intel_gpu_top` is unavailable
+
+### `nixl_intel_gpu_intel_gpu_top_version`
+
+- Type: `gauge`
+- Labels: `version`
+- Unit: boolean `0/1`
+- Source: `scripts/collect-intel-gpu.sh`
+- When absent: `intel_gpu_top` unavailable
+- Interpretation: intel_gpu_top version detected; `version=unavailable` when binary missing
 
 ## Disk and Filesystem Exporter
 

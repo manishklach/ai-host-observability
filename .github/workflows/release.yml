@@ -35,16 +35,31 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           make install PREFIX="dist/ai-host-observability-${VERSION}"
 
-      - name: Archive release
+      - name: Archive release (tarball)
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           tar -C dist -czf "ai-host-observability-${VERSION}.tar.gz" "ai-host-observability-${VERSION}"
           sha256sum "ai-host-observability-${VERSION}.tar.gz" > SHA256SUMS
+
+      - name: Install nfpm
+        run: |
+          curl -sSL https://nfpm.goreleaser.com/install.sh | bash -s -- -b /usr/local/bin
+
+      - name: Build DEB/RPM packages
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          nfpm package --config nfpm.yaml --packager deb --target "ai-host-observability-${VERSION}_amd64.deb"
+          nfpm package --config nfpm.yaml --packager rpm --target "ai-host-observability-${VERSION}-1.x86_64.rpm"
+          sha256sum "ai-host-observability-${VERSION}_amd64.deb" >> SHA256SUMS
+          sha256sum "ai-host-observability-${VERSION}-1.x86_64.rpm" >> SHA256SUMS
 
       - name: Publish GitHub release assets
         uses: softprops/action-gh-release@v2
         with:
           files: |
             ai-host-observability-${{ steps.version.outputs.version }}.tar.gz
+            ai-host-observability-${{ steps.version.outputs.version }}_amd64.deb
+            ai-host-observability-${{ steps.version.outputs.version }}-1.x86_64.rpm
             SHA256SUMS
 

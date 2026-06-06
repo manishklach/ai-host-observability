@@ -12,10 +12,15 @@ require_directory "$PROC_ROOT" "PROC_ROOT"
 
 prom_begin_scrape "nixl_intel_gpu_scrape_success" "Whether the Intel GPU exporter completed successfully."
 emit_help "nixl_gpu_utilization_percent" gauge "GPU utilization percent."
+emit_help "nixl_intel_gpu_intel_gpu_top_version" gauge "intel_gpu_top version detected."
 
 if ! command_exists "$INTEL_GPU_TOP"; then
+  emit_metric "nixl_intel_gpu_intel_gpu_top_version" 0 "version=unavailable"
   exit 0
 fi
+
+intel_version="$("$INTEL_GPU_TOP" --version 2>/dev/null | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")"
+emit_metric "nixl_intel_gpu_intel_gpu_top_version" 1 "version=${intel_version}"
 
 "$INTEL_GPU_TOP" -J -s 1 -n 1 2>/dev/null | python3 -c '
 import json

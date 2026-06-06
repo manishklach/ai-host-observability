@@ -1,0 +1,8 @@
+# AI Host Observability Timer Configuration
+# Create a drop-in file: /etc/systemd/system/ai-host-observability.timer.d/override.conf
+# Then run: systemctl daemon-reload && systemctl restart ai-host-observability.timer
+
+# Collection interval (systemd time span format)
+# Examples: 30s, 1min, 5min, 1h
+# [Timer]
+# OnUnitActiveSec=30s

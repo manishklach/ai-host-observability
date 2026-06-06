@@ -8,6 +8,10 @@ Type=oneshot
 User=root
 Group=root
 Environment=OUT_DIR=/var/lib/node_exporter/textfile_collector
+Environment=PARALLEL=0
+Environment=MAX_PARALLEL=0
+Environment=LOG_FORMAT=text
+EnvironmentFile=-/etc/ai-host-observability/collector.conf
 ExecStart=/bin/bash /opt/ai-host-observability/scripts/collect-all.sh
 
 [Install]
