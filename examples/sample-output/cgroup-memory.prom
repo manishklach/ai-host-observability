@@ -1,0 +1,16 @@
+# HELP nixl_host_cgroup_memory_current_bytes memory.current for the configured cgroup path.
+# TYPE nixl_host_cgroup_memory_current_bytes gauge
+nixl_host_cgroup_memory_current_bytes{path="/sys/fs/cgroup/workloads/train-job.scope"} 34359738368
+# HELP nixl_host_cgroup_memory_events Selected memory.events counters for the configured cgroup path.
+# TYPE nixl_host_cgroup_memory_events counter
+nixl_host_cgroup_memory_events{path="/sys/fs/cgroup/workloads/train-job.scope",event="low"} 0
+nixl_host_cgroup_memory_events{path="/sys/fs/cgroup/workloads/train-job.scope",event="high"} 18
+nixl_host_cgroup_memory_events{path="/sys/fs/cgroup/workloads/train-job.scope",event="max"} 2
+nixl_host_cgroup_memory_events{path="/sys/fs/cgroup/workloads/train-job.scope",event="oom"} 0
+nixl_host_cgroup_memory_events{path="/sys/fs/cgroup/workloads/train-job.scope",event="oom_kill"} 0
+# HELP nixl_host_cgroup_memory_pressure_avg Memory PSI rolling averages for the configured cgroup path.
+# TYPE nixl_host_cgroup_memory_pressure_avg gauge
+nixl_host_cgroup_memory_pressure_avg{path="/sys/fs/cgroup/workloads/train-job.scope",scope="some",window="60s"} 3.24
+# HELP ai_host_exporter_last_run_success Whether the wrapper completed the exporter successfully.
+# TYPE ai_host_exporter_last_run_success gauge
+ai_host_exporter_last_run_success{exporter="nixl_host_mem"} 1

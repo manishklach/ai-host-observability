@@ -1,0 +1,15 @@
+# HELP nixl_host_memory_psi_avg Memory PSI rolling averages from /proc/pressure/memory.
+# TYPE nixl_host_memory_psi_avg gauge
+nixl_host_memory_psi_avg{scope="some",window="10s"} 0.25
+nixl_host_memory_psi_avg{scope="some",window="60s"} 1.90
+nixl_host_memory_psi_avg{scope="some",window="300s"} 0.88
+nixl_host_memory_psi_avg{scope="full",window="10s"} 0.02
+nixl_host_memory_psi_avg{scope="full",window="60s"} 0.10
+nixl_host_memory_psi_avg{scope="full",window="300s"} 0.03
+# HELP nixl_host_memory_psi_total Memory PSI total stall time in microseconds.
+# TYPE nixl_host_memory_psi_total counter
+nixl_host_memory_psi_total{scope="some"} 713428
+nixl_host_memory_psi_total{scope="full"} 8421
+# HELP ai_host_exporter_last_run_success Whether the wrapper completed the exporter successfully.
+# TYPE ai_host_exporter_last_run_success gauge
+ai_host_exporter_last_run_success{exporter="nixl_host_mem"} 1

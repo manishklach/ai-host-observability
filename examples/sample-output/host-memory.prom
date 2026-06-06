@@ -1,0 +1,25 @@
+# HELP nixl_host_fw_pages_total mlx5 firmware pages currently allocated per device.
+# TYPE nixl_host_fw_pages_total gauge
+nixl_host_fw_pages_total{device="mlx5_0"} 48216
+nixl_host_fw_pages_total{device="mlx5_1"} 45120
+# HELP nixl_host_fw_pages_sum Sum of mlx5 firmware pages across all visible devices.
+# TYPE nixl_host_fw_pages_sum gauge
+nixl_host_fw_pages_sum 93336
+# HELP nixl_host_meminfo_bytes Selected /proc/meminfo values converted to bytes.
+# TYPE nixl_host_meminfo_bytes gauge
+nixl_host_meminfo_bytes{field="memavailable"} 12784959488
+nixl_host_meminfo_bytes{field="memfree"} 2147483648
+nixl_host_meminfo_bytes{field="swapfree"} 8589934592
+nixl_host_meminfo_bytes{field="buffers"} 536870912
+nixl_host_meminfo_bytes{field="cached"} 6442450944
+# HELP nixl_host_vmstat Selected memory-pressure counters from /proc/vmstat.
+# TYPE nixl_host_vmstat counter
+nixl_host_vmstat{field="pgscan_kswapd"} 1801
+nixl_host_vmstat{field="pgscan_direct"} 144
+nixl_host_vmstat{field="pgsteal_kswapd"} 1602
+nixl_host_vmstat{field="pgsteal_direct"} 118
+nixl_host_vmstat{field="pswpin"} 0
+nixl_host_vmstat{field="pswpout"} 0
+# HELP ai_host_exporter_last_run_success Whether the wrapper completed the exporter successfully.
+# TYPE ai_host_exporter_last_run_success gauge
+ai_host_exporter_last_run_success{exporter="nixl_host_mem"} 1

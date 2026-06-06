@@ -1,0 +1,19 @@
+# HELP nixl_host_fw_pages_total mlx5 firmware pages currently allocated per device.
+# TYPE nixl_host_fw_pages_total gauge
+nixl_host_fw_pages_total{device="mlx5_0"} 48216
+nixl_host_fw_pages_total{device="mlx5_1"} 45120
+# HELP nixl_host_fw_pages_sum Sum of mlx5 firmware pages across all visible devices.
+# TYPE nixl_host_fw_pages_sum gauge
+nixl_host_fw_pages_sum 93336
+# HELP nixl_infiniband_counter Selected Infiniband hardware counters.
+# TYPE nixl_infiniband_counter counter
+nixl_infiniband_counter{device="mlx5_0",port="1",counter="port_rcv_errors"} 12
+nixl_infiniband_counter{device="mlx5_0",port="1",counter="port_xmit_discards"} 4
+nixl_infiniband_counter{device="mlx5_0",port="1",counter="port_rcv_packets"} 101245
+# HELP nixl_net_ethtool_stat Selected ethtool counters per interface.
+# TYPE nixl_net_ethtool_stat counter
+nixl_net_ethtool_stat{iface="ens5f0np0",stat="link_down_events_phy"} 1
+nixl_net_ethtool_stat{iface="ens5f0np0",stat="rx_discards_phy"} 0
+# HELP ai_host_exporter_last_run_success Whether the wrapper completed the exporter successfully.
+# TYPE ai_host_exporter_last_run_success gauge
+ai_host_exporter_last_run_success{exporter="nixl_rdma_link"} 1

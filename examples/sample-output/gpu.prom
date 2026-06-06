@@ -1,0 +1,18 @@
+# HELP nixl_gpu_memory_used_bytes GPU memory used in bytes.
+# TYPE nixl_gpu_memory_used_bytes gauge
+nixl_gpu_memory_used_bytes{vendor="nvidia",index="0",uuid="GPU-123"} 60129542144
+# HELP nixl_gpu_memory_total_bytes GPU memory total in bytes.
+# TYPE nixl_gpu_memory_total_bytes gauge
+nixl_gpu_memory_total_bytes{vendor="nvidia",index="0",uuid="GPU-123"} 85899345920
+# HELP nixl_gpu_utilization_percent GPU utilization percent.
+# TYPE nixl_gpu_utilization_percent gauge
+nixl_gpu_utilization_percent{vendor="nvidia",index="0",uuid="GPU-123"} 82
+# HELP nixl_gpu_bar1_used_bytes BAR1 memory used in bytes when available.
+# TYPE nixl_gpu_bar1_used_bytes gauge
+nixl_gpu_bar1_used_bytes{vendor="nvidia",index="0",uuid="GPU-123"} 2147483648
+# HELP nixl_gpu_bar1_total_bytes BAR1 memory total in bytes when available.
+# TYPE nixl_gpu_bar1_total_bytes gauge
+nixl_gpu_bar1_total_bytes{vendor="nvidia",index="0",uuid="GPU-123"} 4294967296
+# HELP ai_host_exporter_last_run_success Whether the wrapper completed the exporter successfully.
+# TYPE ai_host_exporter_last_run_success gauge
+ai_host_exporter_last_run_success{exporter="nixl_gpu"} 1

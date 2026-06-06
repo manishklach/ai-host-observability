@@ -1,9 +1,9 @@
 .DS_Store
 *.prom
+!examples/sample-output/*.prom
 *.tmp
 *.swp
 .idea/
 .vscode/
 tmp/
 tests/tmp/
-

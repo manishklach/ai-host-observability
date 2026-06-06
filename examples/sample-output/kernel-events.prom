@@ -1,0 +1,11 @@
+# HELP nixl_kernel_log_pattern_total Count of matching kernel log patterns since boot.
+# TYPE nixl_kernel_log_pattern_total counter
+nixl_kernel_log_pattern_total{pattern="oom"} 1
+nixl_kernel_log_pattern_total{pattern="pcie_aer"} 4
+nixl_kernel_log_pattern_total{pattern="vfio"} 0
+nixl_kernel_log_pattern_total{pattern="iommu_dma"} 0
+nixl_kernel_log_pattern_total{pattern="rdma_mlx5"} 6
+nixl_kernel_log_pattern_total{pattern="gpu_driver"} 0
+# HELP ai_host_exporter_last_run_success Whether the wrapper completed the exporter successfully.
+# TYPE ai_host_exporter_last_run_success gauge
+ai_host_exporter_last_run_success{exporter="nixl_kernel_log"} 1

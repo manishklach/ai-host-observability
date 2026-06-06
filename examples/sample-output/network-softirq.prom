@@ -1,0 +1,15 @@
+# HELP nixl_softnet_stat_total Selected /proc/net/softnet_stat counters per CPU.
+# TYPE nixl_softnet_stat_total counter
+nixl_softnet_stat_total{cpu="0",field="processed"} 4901221
+nixl_softnet_stat_total{cpu="0",field="dropped"} 0
+nixl_softnet_stat_total{cpu="0",field="time_squeezed"} 187
+nixl_softnet_stat_total{cpu="1",field="processed"} 4722009
+nixl_softnet_stat_total{cpu="1",field="dropped"} 12
+nixl_softnet_stat_total{cpu="1",field="time_squeezed"} 251
+# HELP nixl_net_ethtool_stat Selected ethtool counters per interface.
+# TYPE nixl_net_ethtool_stat counter
+nixl_net_ethtool_stat{iface="ens5f0np0",stat="rx_errors"} 0
+nixl_net_ethtool_stat{iface="ens5f0np0",stat="tx_errors"} 0
+# HELP ai_host_exporter_last_run_success Whether the wrapper completed the exporter successfully.
+# TYPE ai_host_exporter_last_run_success gauge
+ai_host_exporter_last_run_success{exporter="nixl_network_stack"} 1

@@ -1,0 +1,12 @@
+# HELP nixl_filesystem_bytes Filesystem size, used, and available bytes by mountpoint.
+# TYPE nixl_filesystem_bytes gauge
+nixl_filesystem_bytes{filesystem="/dev/nvme0n1p1",mount="/",fstype="xfs",field="size"} 536870912000
+nixl_filesystem_bytes{filesystem="/dev/nvme0n1p1",mount="/",fstype="xfs",field="used"} 214748364800
+nixl_filesystem_bytes{filesystem="/dev/nvme0n1p1",mount="/",fstype="xfs",field="avail"} 322122547200
+# HELP nixl_inode_nr Allocated and free inode counters from /proc/sys/fs/inode-nr.
+# TYPE nixl_inode_nr gauge
+nixl_inode_nr{field="allocated"} 782144
+nixl_inode_nr{field="free"} 1932
+# HELP ai_host_exporter_last_run_success Whether the wrapper completed the exporter successfully.
+# TYPE ai_host_exporter_last_run_success gauge
+ai_host_exporter_last_run_success{exporter="nixl_disk"} 1
