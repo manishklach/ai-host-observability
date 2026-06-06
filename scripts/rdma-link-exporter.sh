@@ -13,6 +13,8 @@ JOURNALCTL="${JOURNALCTL:-journalctl}"
 NVIDIA_SMI="${NVIDIA_SMI:-nvidia-smi}"
 ETHTOOL="${ETHTOOL:-ethtool}"
 
+require_directory "$PROC_ROOT" "PROC_ROOT"
+
 sanitize_stat_name() {
   tr ' /-' '___' <<<"$1"
 }
@@ -81,4 +83,3 @@ done
 shopt -u nullglob
 
 prom_end_scrape
-

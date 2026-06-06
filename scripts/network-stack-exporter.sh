@@ -13,6 +13,8 @@ JOURNALCTL="${JOURNALCTL:-journalctl}"
 NVIDIA_SMI="${NVIDIA_SMI:-nvidia-smi}"
 ETHTOOL="${ETHTOOL:-ethtool}"
 
+require_directory "$PROC_ROOT" "PROC_ROOT"
+
 prom_begin_scrape "nixl_network_stack_scrape_success" "Whether the generic network stack exporter completed successfully."
 
 emit_help "nixl_netdev_total" counter "Selected ${PROC_ROOT}/net/dev counters per interface."

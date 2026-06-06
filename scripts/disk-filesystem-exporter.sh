@@ -14,6 +14,8 @@ NVIDIA_SMI="${NVIDIA_SMI:-nvidia-smi}"
 ETHTOOL="${ETHTOOL:-ethtool}"
 DF="${DF:-df}"
 
+require_directory "$PROC_ROOT" "PROC_ROOT"
+
 prom_begin_scrape "nixl_disk_scrape_success" "Whether the disk and filesystem exporter completed successfully."
 
 emit_help "nixl_diskstat_total" counter "Selected ${PROC_ROOT}/diskstats counters."

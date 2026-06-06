@@ -1,11 +1,13 @@
 PREFIX ?= /opt/ai-host-observability
 SYSTEMD_DIR ?= /etc/systemd/system
 
-.PHONY: test lint smoke install uninstall format
+.PHONY: test test-bats lint smoke install uninstall format
 
 test:
-	bash tests/test_exporters.sh
-	bash tests/test_collect_all.sh
+	$(MAKE) test-bats
+
+test-bats:
+	bats tests/
 
 lint:
 	find scripts tests -name '*.sh' -print0 | xargs -0 -n1 bash -n
@@ -27,4 +29,3 @@ uninstall:
 format:
 	if command -v shfmt >/dev/null 2>&1; then find scripts tests -name '*.sh' -print0 | xargs -0 shfmt -w; fi
 	if command -v jq >/dev/null 2>&1; then tmp=$$(mktemp); jq . grafana/ai-host-overview.json > "$$tmp" && mv "$$tmp" grafana/ai-host-overview.json; fi
-

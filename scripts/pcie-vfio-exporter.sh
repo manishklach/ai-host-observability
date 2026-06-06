@@ -14,6 +14,8 @@ NVIDIA_SMI="${NVIDIA_SMI:-nvidia-smi}"
 ETHTOOL="${ETHTOOL:-ethtool}"
 INTERESTING_DRIVERS_REGEX="${INTERESTING_DRIVERS_REGEX:-mlx5_core|nvidia|vfio-pci|nvme}"
 
+require_directory "$PROC_ROOT" "PROC_ROOT"
+
 prom_begin_scrape "nixl_pcie_scrape_success" "Whether the PCIe, VFIO, and IOMMU exporter completed successfully."
 
 emit_help "nixl_pcie_device_info" gauge "PCIe device metadata for devices bound to interesting drivers."
@@ -60,4 +62,3 @@ if [[ -r "${PROC_ROOT}/modules" ]]; then
 fi
 
 prom_end_scrape
-

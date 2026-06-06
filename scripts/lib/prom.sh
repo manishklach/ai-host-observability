@@ -16,6 +16,15 @@ command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
+require_directory() {
+  local path="$1"
+  local label="${2:-required directory}"
+  if [[ ! -d "$path" ]]; then
+    printf '%s missing: %s\n' "$label" "$path" >&2
+    return 1
+  fi
+}
+
 safe_read_file() {
   local path="$1"
   [[ -r "$path" ]] || return 1
@@ -76,4 +85,3 @@ prom_end_scrape() {
   [[ -n "$metric_name" ]] || return 0
   emit_metric "$metric_name" 1
 }
-

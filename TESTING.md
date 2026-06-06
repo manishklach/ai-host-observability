@@ -2,6 +2,23 @@
 
 This repo is designed for Linux hosts, but it can be partially validated from Windows using WSL.
 
+## Install Bats
+
+`bats-core` is the supported test runner for this repo.
+
+Ubuntu / Debian:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y bats
+```
+
+macOS:
+
+```bash
+brew install bats-core
+```
+
 ## What Was Verified in WSL
 
 Using `Ubuntu-24.04` in WSL:
@@ -52,6 +69,12 @@ Run the collector manually:
 cd /path/to/ai-host-observability
 OUT_DIR=/tmp/ai-host-observability-prom bash scripts/collect-all.sh
 ls -1 /tmp/ai-host-observability-prom
+```
+
+Run the bats test suite:
+
+```bash
+make test-bats
 ```
 
 ## Deployment Validation

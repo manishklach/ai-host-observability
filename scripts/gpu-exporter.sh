@@ -13,6 +13,8 @@ JOURNALCTL="${JOURNALCTL:-journalctl}"
 NVIDIA_SMI="${NVIDIA_SMI:-nvidia-smi}"
 ETHTOOL="${ETHTOOL:-ethtool}"
 
+require_directory "$PROC_ROOT" "PROC_ROOT"
+
 to_bytes_from_mib() {
   awk -v value="$1" 'BEGIN { printf "%.0f", value * 1024 * 1024 }'
 }

@@ -13,6 +13,8 @@ JOURNALCTL="${JOURNALCTL:-journalctl}"
 NVIDIA_SMI="${NVIDIA_SMI:-nvidia-smi}"
 ETHTOOL="${ETHTOOL:-ethtool}"
 
+require_directory "$PROC_ROOT" "PROC_ROOT"
+
 emit_psi_metrics() {
   local path="$1"
   local avg_metric="$2"
