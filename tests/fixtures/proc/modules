@@ -1,0 +1,3 @@
+vfio_pci 16384 0 - Live 0x00000000
+mlx5_core 409600 1 - Live 0x00000000
+

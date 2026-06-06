@@ -1,0 +1,7 @@
+Node 0 MemTotal:       1024000 kB
+Node 0 MemFree:         512000 kB
+Node 0 MemUsed:         256000 kB
+Node 0 FilePages:       128000 kB
+Node 0 HugePages_Total: 32
+Node 0 HugePages_Free:  16
+

@@ -1,0 +1,159 @@
+groups:
+  - name: ai-host-observability
+    rules:
+      # Host memory available is trending low. Tune threshold per fleet size.
+      - alert: HostMemoryAvailableLow
+        expr: nixl_host_meminfo_bytes{field="memavailable"} < 8e9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Host available memory is low
+          description: MemAvailable has remained below 8 GiB for 10 minutes.
+
+      # PSI is a better early signal than waiting for OOM.
+      - alert: HostMemoryPSIHigh
+        expr: nixl_host_memory_psi_avg{scope="some",window="60s"} > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Host memory PSI is elevated
+          description: Memory pressure has been elevated for 5 minutes.
+
+      # Direct reclaim is a strong indicator that normal free memory is exhausted.
+      - alert: HostReclaimPressureHigh
+        expr: rate(nixl_host_vmstat{field="pgscan_direct"}[10m]) > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Direct reclaim pressure is high
+          description: The kernel is performing direct reclaim at a sustained rate.
+
+      - alert: HostSwapActivityDetected
+        expr: rate(nixl_host_vmstat{field=~"pswpin|pswpout"}[10m]) > 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Host swap activity detected
+          description: Swap-in or swap-out activity has been detected.
+
+      - alert: Mlx5FirmwarePagesGrowingFast
+        expr: rate(nixl_host_fw_pages_sum[15m]) > 100
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: mlx5 firmware pages are growing quickly
+          description: Host-side registration footprint is growing faster than expected.
+
+      - alert: CgroupOOMKillDetected
+        expr: increase(nixl_host_cgroup_memory_events{event="oom_kill"}[15m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: Cgroup OOM kill detected
+          description: A monitored cgroup has seen an OOM kill in the last 15 minutes.
+
+      - alert: SoftnetDropsIncreasing
+        expr: rate(nixl_softnet_stat_total{field="dropped"}[10m]) > 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Softnet drops are increasing
+          description: Per-CPU softnet drops indicate host networking backlog pressure.
+
+      - alert: NICLinkDownEvents
+        expr: increase(nixl_net_ethtool_stat{stat="link_down_events_phy"}[30m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: NIC link down events detected
+          description: One or more NICs reported link-down events.
+
+      - alert: RDMAErrorsIncreasing
+        expr: increase(nixl_infiniband_counter{counter=~"port_rcv_errors|port_xmit_discards"}[10m]) > 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: RDMA error counters are increasing
+          description: InfiniBand transport error counters are rising.
+
+      - alert: PCIELinkDowngraded
+        expr: nixl_gpu_pcie_link_width < 8
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: GPU PCIe link width appears reduced
+          description: A GPU is reporting a PCIe link width below x8.
+
+      - alert: GPUPowerOrThermalLimit
+        expr: nixl_gpu_temperature_celsius > 85 or nixl_gpu_power_draw_watts > 650
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: GPU thermal or power pressure detected
+          description: GPU temperature or power draw has stayed elevated.
+
+      - alert: GPUBar1PressureHigh
+        expr: nixl_gpu_bar1_used_bytes / nixl_gpu_bar1_total_bytes > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: GPU BAR1 pressure is high
+          description: BAR1 usage has exceeded 80 percent.
+
+      - alert: KernelOOMDetected
+        expr: increase(nixl_kernel_log_pattern_total{pattern="oom"}[30m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: Kernel OOM patterns detected
+          description: Kernel logs have recorded OOM activity.
+
+      - alert: KernelAEREventsDetected
+        expr: increase(nixl_kernel_log_pattern_total{pattern="pcie_aer"}[30m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: PCIe AER events detected
+          description: Kernel logs show new PCIe/AER related events.
+
+      - alert: VFIOIOMMUErrorsDetected
+        expr: increase(nixl_kernel_log_pattern_total{pattern=~"vfio|iommu_dma"}[30m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: VFIO or IOMMU related errors detected
+          description: Kernel logs show new VFIO or IOMMU error activity.
+
+      - alert: FilesystemInodesLow
+        expr: nixl_inode_nr{field="free"} < 10000
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: Filesystem free inode pool is low
+          description: Free inode counters are below the configured threshold.
+
+      - alert: DiskIOErrorsIncreasing
+        expr: increase(nixl_netdev_total{field=~"rx_errs|tx_errs"}[15m]) > 0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: Host error counters are increasing
+          description: Review whether storage or network error counters are rising and tailor this rule for your environment.
+

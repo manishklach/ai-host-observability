@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install test tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck jq python3-yaml systemd
+
+      - name: Bash syntax
+        run: find scripts tests -name '*.sh' -print0 | xargs -0 -n1 bash -n
+
+      - name: Shellcheck
+        run: find scripts tests -name '*.sh' -print0 | xargs -0 shellcheck
+
+      - name: Exporter tests
+        run: bash tests/test_exporters.sh
+
+      - name: Collector tests
+        run: bash tests/test_collect_all.sh
+
+      - name: Validate Grafana JSON
+        run: jq empty grafana/ai-host-overview.json
+
+      - name: Validate alert rules
+        run: |
+          python3 - <<'PY'
+          import yaml
+          with open("prometheus/alerts.yml", "r", encoding="utf-8") as handle:
+              yaml.safe_load(handle)
+          PY
+
+      - name: Verify systemd units
+        run: |
+          if command -v systemd-analyze >/dev/null 2>&1; then
+            systemd-analyze verify deploy/systemd/*.service deploy/systemd/*.timer
+          fi

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cat <<'EOF'
+0, GPU-123, Test GPU "A", 0000:01:00.0, 42, 1024, 8192, 70, 215.5, 5, 16, 0, 512, 1024
+EOF
+

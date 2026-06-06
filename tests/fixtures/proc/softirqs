@@ -1,0 +1,5 @@
+                    CPU0       CPU1
+NET_TX:               10         20
+NET_RX:               30         40
+BLOCK:                 5          5
+

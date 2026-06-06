@@ -5,6 +5,7 @@ Description=Run AI Host Observability collector every minute
 OnBootSec=1min
 OnUnitActiveSec=1min
 AccuracySec=15s
+Persistent=true
 Unit=ai-host-observability.service
 
 [Install]

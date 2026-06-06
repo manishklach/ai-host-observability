@@ -1,0 +1,7 @@
+numa_hit 100
+numa_miss 5
+numa_foreign 1
+interleave_hit 0
+local_node 90
+other_node 10
+

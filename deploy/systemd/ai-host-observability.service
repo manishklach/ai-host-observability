@@ -8,7 +8,7 @@ Type=oneshot
 User=root
 Group=root
 Environment=OUT_DIR=/var/lib/node_exporter/textfile_collector
-ExecStart=/opt/ai-host-observability/collect-all.sh
+ExecStart=/bin/bash /opt/ai-host-observability/scripts/collect-all.sh
 
 [Install]
 WantedBy=multi-user.target

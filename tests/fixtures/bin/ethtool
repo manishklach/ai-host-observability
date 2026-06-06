@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "-S" ]]; then
+  cat <<'EOF'
+NIC statistics:
+     rx_discards_phy: 9
+     tx_discards_phy: 4
+     rx_errors: 1
+     tx_errors: 2
+     link_down_events_phy: 3
+EOF
+  exit 0
+fi
+
+exit 1
+

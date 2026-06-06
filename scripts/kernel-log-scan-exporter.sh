@@ -1,39 +1,30 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-timestamp="$(date +%s)"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/lib/prom.sh
+source "${SCRIPT_DIR}/lib/prom.sh"
+
+PROC_ROOT="${PROC_ROOT:-/proc}"
+SYS_ROOT="${SYS_ROOT:-/sys}"
+DEBUGFS_ROOT="${DEBUGFS_ROOT:-/sys/kernel/debug}"
+RUN_ROOT="${RUN_ROOT:-/run}"
+JOURNALCTL="${JOURNALCTL:-journalctl}"
+NVIDIA_SMI="${NVIDIA_SMI:-nvidia-smi}"
+ETHTOOL="${ETHTOOL:-ethtool}"
+DMESG="${DMESG:-dmesg}"
+
+prom_begin_scrape "nixl_kernel_log_scan_success" "Whether the kernel log pattern scanner completed successfully."
+emit_help "nixl_kernel_log_pattern_total" counter "Count of matching kernel log patterns since boot."
+
 tmpfile="$(mktemp)"
-trap 'rm -f "$tmpfile"' EXIT
+trap 'rm -f -- "$tmpfile"' EXIT
 
-emit_help() {
-  local name="$1"
-  local type="$2"
-  local help="$3"
-  printf '# HELP %s %s\n' "$name" "$help"
-  printf '# TYPE %s %s\n' "$name" "$type"
-}
-
-emit_metric() {
-  local name="$1"
-  local value="$2"
-  local labels="${3:-}"
-  if [[ -n "$labels" ]]; then
-    printf '%s{%s} %s %s\n' "$name" "$labels" "$value" "$timestamp"
-  else
-    printf '%s %s %s\n' "$name" "$value" "$timestamp"
-  fi
-}
-
-if command -v journalctl >/dev/null 2>&1; then
-  journalctl -k -b --no-pager >"$tmpfile" 2>/dev/null || true
-else
-  dmesg >"$tmpfile" 2>/dev/null || true
+if command_exists "$JOURNALCTL"; then
+  "$JOURNALCTL" -k -b --no-pager >"$tmpfile" 2>/dev/null || true
+elif command_exists "$DMESG"; then
+  "$DMESG" >"$tmpfile" 2>/dev/null || true
 fi
-
-emit_help "nixl_kernel_log_scan_success" "gauge" "Whether the exporter completed successfully."
-emit_metric "nixl_kernel_log_scan_success" "0"
-
-emit_help "nixl_kernel_log_pattern_total" "counter" "Count of matching kernel-log patterns since boot."
 
 patterns=(
   "oom|out of memory|oom-kill"
@@ -53,9 +44,10 @@ names=(
   "gpu_driver"
 )
 
-for i in "${!patterns[@]}"; do
-  count="$(grep -Eic "${patterns[$i]}" "$tmpfile" || true)"
-  emit_metric "nixl_kernel_log_pattern_total" "$count" "pattern=\"${names[$i]}\""
+for idx in "${!patterns[@]}"; do
+  count="$(grep -Eic "${patterns[$idx]}" "$tmpfile" || true)"
+  emit_metric "nixl_kernel_log_pattern_total" "$count" "pattern=${names[$idx]}"
 done
 
-emit_metric "nixl_kernel_log_scan_success" "1"
+prom_end_scrape
+

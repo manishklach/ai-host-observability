@@ -1,0 +1,4 @@
+           CPU0       CPU1
+ 24:         10         20  IR-PCI-MSI 524288-edge      mlx5_comp0
+ 25:          4          6  IR-PCI-MSI 524289-edge      pciehp
+

@@ -1,60 +1,50 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-timestamp="$(date +%s)"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/lib/prom.sh
+source "${SCRIPT_DIR}/lib/prom.sh"
 
-emit_help() {
-  local name="$1"
-  local type="$2"
-  local help="$3"
-  printf '# HELP %s %s\n' "$name" "$help"
-  printf '# TYPE %s %s\n' "$name" "$type"
-}
+PROC_ROOT="${PROC_ROOT:-/proc}"
+SYS_ROOT="${SYS_ROOT:-/sys}"
+DEBUGFS_ROOT="${DEBUGFS_ROOT:-/sys/kernel/debug}"
+RUN_ROOT="${RUN_ROOT:-/run}"
+JOURNALCTL="${JOURNALCTL:-journalctl}"
+NVIDIA_SMI="${NVIDIA_SMI:-nvidia-smi}"
+ETHTOOL="${ETHTOOL:-ethtool}"
 
-emit_metric() {
-  local name="$1"
-  local value="$2"
-  local labels="${3:-}"
-  if [[ -n "$labels" ]]; then
-    printf '%s{%s} %s %s\n' "$name" "$labels" "$value" "$timestamp"
-  else
-    printf '%s %s %s\n' "$name" "$value" "$timestamp"
-  fi
-}
+prom_begin_scrape "nixl_numa_scrape_success" "Whether the NUMA exporter completed successfully."
 
-emit_help "nixl_numa_scrape_success" "gauge" "Whether the exporter completed successfully."
-emit_metric "nixl_numa_scrape_success" "0"
+emit_help "nixl_numa_meminfo_bytes" gauge "Selected per-node meminfo values converted to bytes."
+emit_help "nixl_numa_hugepages" gauge "Selected per-node hugepage counts."
 
-emit_help "nixl_numa_meminfo_bytes" "gauge" "Selected per-node meminfo values converted to bytes."
-emit_help "nixl_numa_hugepages" "gauge" "Selected per-node hugepage counts."
 shopt -s nullglob
-for meminfo in /sys/devices/system/node/node*/meminfo; do
+for meminfo in "${SYS_ROOT}"/devices/system/node/node*/meminfo; do
   node="$(basename "$(dirname "$meminfo")")"
-  while read -r _ key value unit; do
+  while read -r _node _id key value unit; do
     case "$key" in
       MemFree:|MemUsed:|FilePages:)
-        field="$(tr '[:upper:]' '[:lower:]' <<<"${key%:}")"
-        emit_metric "nixl_numa_meminfo_bytes" "$((value * 1024))" "node=\"$node\",field=\"$field\""
+        is_integer "$value" && emit_metric "nixl_numa_meminfo_bytes" "$((value * 1024))" "node=${node}" "field=$(tr '[:upper:]' '[:lower:]' <<<"${key%:}")"
         ;;
       HugePages_Total:|HugePages_Free:)
-        field="$(tr '[:upper:]' '[:lower:]' <<<"${key%:}")"
-        emit_metric "nixl_numa_hugepages" "$value" "node=\"$node\",field=\"$field\""
+        is_integer "$value" && emit_metric "nixl_numa_hugepages" "$value" "node=${node}" "field=$(tr '[:upper:]' '[:lower:]' <<<"${key%:}")"
         ;;
     esac
-  done < "$meminfo"
+  done <"$meminfo"
 done
 
-emit_help "nixl_numa_stat" "counter" "Selected NUMA hit and miss counters from /sys/devices/system/node/node*/numastat."
-for numastat in /sys/devices/system/node/node*/numastat; do
+emit_help "nixl_numa_stat" counter "Selected NUMA hit and miss counters from ${SYS_ROOT}/devices/system/node/node*/numastat."
+for numastat in "${SYS_ROOT}"/devices/system/node/node*/numastat; do
   node="$(basename "$(dirname "$numastat")")"
   while read -r key value; do
     case "$key" in
       numa_hit|numa_miss|numa_foreign|interleave_hit|local_node|other_node)
-        emit_metric "nixl_numa_stat" "$value" "node=\"$node\",field=\"$key\""
+        is_integer "$value" && emit_metric "nixl_numa_stat" "$value" "node=${node}" "field=${key}"
         ;;
     esac
-  done < "$numastat"
+  done <"$numastat"
 done
 shopt -u nullglob
 
-emit_metric "nixl_numa_scrape_success" "1"
+prom_end_scrape
+

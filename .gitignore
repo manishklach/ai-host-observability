@@ -1,0 +1,9 @@
+.DS_Store
+*.prom
+*.tmp
+*.swp
+.idea/
+.vscode/
+tmp/
+tests/tmp/
+
