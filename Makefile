@@ -4,6 +4,10 @@ SYSTEMD_DIR ?= /etc/systemd/system
 .PHONY: test test-bats lint smoke install uninstall format
 
 test:
+	@if ! command -v bats >/dev/null 2>&1; then \
+		echo "bats is required for make test. Install bats, or run make lint and make smoke."; \
+		exit 1; \
+	fi
 	$(MAKE) test-bats
 
 test-bats:

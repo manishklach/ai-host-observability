@@ -12,12 +12,15 @@ teardown() {
 
 assert_exporter_direct() {
   local script_name="$1"
+  local expected_metric="$2"
   local output_file="${TEST_TMPDIR}/${script_name}.prom"
 
   run run_exporter_direct "${script_name}" "${output_file}"
   [ "$status" -eq 0 ]
   [ -s "${output_file}" ]
   run assert_valid_metric_line "${output_file}"
+  [ "$status" -eq 0 ]
+  run assert_metric_present "${expected_metric}" "${output_file}"
   [ "$status" -eq 0 ]
 }
 
@@ -45,7 +48,9 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_host_mem direct fixture run emits Prometheus metrics" {
-  assert_exporter_direct "nixl-host-mem-exporter.sh"
+  assert_exporter_direct "nixl-host-mem-exporter.sh" 'nixl_host_fw_pages_sum '
+  run assert_metric_present 'nixl_host_meminfo_bytes{field="memavailable"}' "${TEST_TMPDIR}/nixl-host-mem-exporter.sh.prom"
+  [ "$status" -eq 0 ]
 }
 
 @test "nixl_host_mem missing proc path emits wrapper failure metric" {
@@ -57,7 +62,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_rdma_link direct fixture run emits Prometheus metrics" {
-  assert_exporter_direct "rdma-link-exporter.sh"
+  assert_exporter_direct "rdma-link-exporter.sh" 'nixl_infiniband_counter{device="mlx5_0",port="1",counter="port_rcv_errors"}'
 }
 
 @test "nixl_rdma_link missing proc path emits wrapper failure metric" {
@@ -69,7 +74,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_cpu_irq direct fixture run emits Prometheus metrics" {
-  assert_exporter_direct "cpu-irq-exporter.sh"
+  assert_exporter_direct "cpu-irq-exporter.sh" 'nixl_cpu_psi_avg{scope="some",window="60s"}'
 }
 
 @test "nixl_cpu_irq missing proc path emits wrapper failure metric" {
@@ -81,7 +86,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_numa direct fixture run emits Prometheus metrics" {
-  assert_exporter_direct "numa-exporter.sh"
+  assert_exporter_direct "numa-exporter.sh" 'nixl_numa_meminfo_bytes{node="node0",field="memfree"}'
 }
 
 @test "nixl_numa missing proc path emits wrapper failure metric" {
@@ -93,7 +98,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_kernel_log direct fixture run emits Prometheus metrics" {
-  assert_exporter_direct "kernel-log-scan-exporter.sh"
+  assert_exporter_direct "kernel-log-scan-exporter.sh" 'nixl_kernel_log_pattern_total{pattern="oom"}'
 }
 
 @test "nixl_kernel_log missing proc path emits wrapper failure metric" {
@@ -105,7 +110,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_gpu direct fixture run emits Prometheus metrics" {
-  assert_exporter_direct "gpu-exporter.sh"
+  assert_exporter_direct "gpu-exporter.sh" 'nixl_gpu_memory_used_bytes{vendor="nvidia",index="0",uuid="GPU-123"}'
 }
 
 @test "nixl_gpu missing proc path emits wrapper failure metric" {
@@ -117,7 +122,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_disk direct fixture run emits Prometheus metrics" {
-  assert_exporter_direct "disk-filesystem-exporter.sh"
+  assert_exporter_direct "disk-filesystem-exporter.sh" 'nixl_inode_nr{field="allocated"}'
 }
 
 @test "nixl_disk missing proc path emits wrapper failure metric" {
@@ -129,7 +134,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_network_stack direct fixture run emits Prometheus metrics" {
-  assert_exporter_direct "network-stack-exporter.sh"
+  assert_exporter_direct "network-stack-exporter.sh" 'nixl_softnet_stat_total{cpu="0",field="dropped"}'
 }
 
 @test "nixl_network_stack missing proc path emits wrapper failure metric" {
@@ -141,7 +146,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_process_memory direct fixture run emits Prometheus metrics" {
-  assert_exporter_direct "process-memory-exporter.sh"
+  assert_exporter_direct "process-memory-exporter.sh" 'nixl_process_locked_bytes{pid="100",comm="testproc"}'
 }
 
 @test "nixl_process_memory missing proc path emits wrapper failure metric" {
@@ -153,7 +158,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_pcie_vfio direct fixture run emits Prometheus metrics" {
-  assert_exporter_direct "pcie-vfio-exporter.sh"
+  assert_exporter_direct "pcie-vfio-exporter.sh" 'nixl_pcie_device_info{bdf="0000_af_00.0",driver="unbound"'
 }
 
 @test "nixl_pcie_vfio missing proc path emits wrapper failure metric" {
@@ -165,7 +170,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_amd_gpu direct fixture run emits Prometheus metrics" {
-  assert_exporter_direct "collect-amd-gpu.sh"
+  assert_exporter_direct "collect-amd-gpu.sh" 'nixl_gpu_memory_used_bytes{vendor="amd",index="0",uuid="AMD-000"}'
 }
 
 @test "nixl_amd_gpu missing proc path emits wrapper failure metric" {
@@ -189,7 +194,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_intel_gpu direct fixture run emits Prometheus metrics" {
-  assert_exporter_direct "collect-intel-gpu.sh"
+  assert_exporter_direct "collect-intel-gpu.sh" 'nixl_gpu_utilization_percent{vendor="intel",index="0",uuid="intel-0"}'
 }
 
 @test "nixl_intel_gpu missing proc path emits wrapper failure metric" {

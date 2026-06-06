@@ -1,14 +1,10 @@
 # AI Host Observability
 
-Prometheus-friendly Linux host observability for AI and GPU infrastructure: memory pressure, RDMA/NIC health, GPUs, PCIe/VFIO, NUMA, filesystem pressure, process locked memory, and kernel-event signals.
+Prometheus-friendly Linux host observability for AI and GPU infrastructure, built for the pressure signals that show up between the GPU, NIC, PCIe, VFIO, and the host kernel.
 
-## Description
+AI and GPU servers often fail on the host side before the GPU looks unhealthy. Hidden pressure can build in memory reclaim, PSI, RDMA registration footprint, IRQ load, BAR1 usage, cgroup growth, or kernel log patterns while GPU HBM still looks fine.
 
-`ai-host-observability` collects host-side pressure signals that are easy to miss when only guest RAM, GPU HBM, or application metrics are visible. It is designed for accelerated Linux servers where hidden host pressure often shows up first in reclaim, PSI, RDMA registration footprint, IRQ load, BAR1 usage, or kernel logs.
-
-## GitHub Topics
-
-`observability,prometheus,node-exporter,linux,gpu,rdma,infiniband,nvidia,mlx5,numa,vfio,pcie,ai-infrastructure,sre,performance-engineering`
+This repo focuses on that seam layer: the host-side failure modes that DCGM and generic `node_exporter` setups do not always emphasize out of the box. For the positioning and tradeoffs, see [Why not just use DCGM or node_exporter?](docs/why-not-dcgm-or-node-exporter.md).
 
 ## Collection Architecture
 

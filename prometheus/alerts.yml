@@ -148,12 +148,11 @@ groups:
           summary: Filesystem free inode pool is low
           description: Free inode counters are below the configured threshold.
 
-      - alert: DiskIOErrorsIncreasing
+      - alert: NetworkDeviceErrorsIncreasing
         expr: increase(nixl_netdev_total{field=~"rx_errs|tx_errs"}[15m]) > 0
         for: 15m
         labels:
           severity: warning
         annotations:
-          summary: Host error counters are increasing
-          description: Review whether storage or network error counters are rising and tailor this rule for your environment.
-
+          summary: Network device error counters are increasing
+          description: Receive or transmit error counters are increasing on one or more host network interfaces.
