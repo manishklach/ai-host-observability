@@ -51,6 +51,12 @@ flowchart LR
 4. Inspect softnet drops, IRQ load, and NIC/RDMA errors.
 5. Correlate with kernel log pattern counters.
 
+## Start Here If You Are Debugging An Incident
+
+- [Host memory pressure runbook](docs/runbooks/host-memory-pressure.md)
+- [RDMA registration growth runbook](docs/runbooks/rdma-registration-growth.md)
+- [GPU looks fine, host is sick demo and walkthrough](docs/demos/host-oom-before-gpu-oom.md)
+
 ## Install
 
 ### Requirements
@@ -62,6 +68,20 @@ flowchart LR
 - `ethtool` recommended
 - `nvidia-smi` optional
 - `debugfs` mounted if you want `fw_pages_total`
+
+### Quick Install From A Release Tarball
+
+```bash
+VERSION=0.2.0
+curl -LO "https://github.com/manishklach/ai-host-observability/releases/download/v${VERSION}/ai-host-observability-${VERSION}.tar.gz"
+curl -LO "https://github.com/manishklach/ai-host-observability/releases/download/v${VERSION}/SHA256SUMS"
+sha256sum -c SHA256SUMS
+tar -xzf "ai-host-observability-${VERSION}.tar.gz"
+cd "ai-host-observability-${VERSION}"
+sudo make install
+sudo systemctl daemon-reload
+sudo systemctl enable --now ai-host-observability.timer
+```
 
 ### Manual Install
 
@@ -114,6 +134,8 @@ nixl_gpu_bar1_used_bytes{index="0",uuid="GPU-123"} 536870912 1710000000
 ai_host_exporter_last_run_success{exporter="nixl_host_mem"} 1 1710000000
 ```
 
+More realistic textfile examples live in [examples/sample-output](examples/sample-output).
+
 ## Tested Environments
 
 - WSL `Ubuntu-24.04` for syntax and fixture-backed tests
@@ -137,7 +159,10 @@ ai_host_exporter_last_run_success{exporter="nixl_host_mem"} 1 1710000000
 
 - [Metrics contract](docs/metrics.md)
 - [Runbooks](docs/runbooks)
+- [Incident demo: GPU looks fine, host is dying](docs/demos/host-oom-before-gpu-oom.md)
+- [Why not just use DCGM or node_exporter?](docs/why-not-dcgm-or-node-exporter.md)
+- [Sample Prometheus outputs](examples/sample-output)
 - [Kernel debugging guide](KERNEL_DEBUGGING.md)
+- [Release process](RELEASE.md)
 - [Testing guide](TESTING.md)
 - [Signal cheat sheet](docs/signals.md)
-

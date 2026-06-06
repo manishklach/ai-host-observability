@@ -18,9 +18,13 @@ smoke:
 
 install:
 	mkdir -p $(PREFIX)
-	cp -R README.md CHANGELOG.md CONTRIBUTING.md SECURITY.md LICENSE TESTING.md KERNEL_DEBUGGING.md docs grafana prometheus scripts deploy $(PREFIX)/
-	install -m 0644 deploy/systemd/ai-host-observability.service $(SYSTEMD_DIR)/
-	install -m 0644 deploy/systemd/ai-host-observability.timer $(SYSTEMD_DIR)/
+	cp -R README.md CHANGELOG.md CONTRIBUTING.md SECURITY.md LICENSE TESTING.md KERNEL_DEBUGGING.md RELEASE.md Makefile docs examples grafana prometheus scripts deploy $(PREFIX)/
+	@if mkdir -p $(SYSTEMD_DIR) 2>/dev/null && [ -w "$(SYSTEMD_DIR)" ]; then \
+		install -m 0644 deploy/systemd/ai-host-observability.service $(SYSTEMD_DIR)/; \
+		install -m 0644 deploy/systemd/ai-host-observability.timer $(SYSTEMD_DIR)/; \
+	else \
+		echo "Skipping systemd unit install to $(SYSTEMD_DIR)"; \
+	fi
 
 uninstall:
 	rm -rf $(PREFIX)
