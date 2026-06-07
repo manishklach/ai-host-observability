@@ -1,0 +1,70 @@
+name: Bug report
+description: Report a broken exporter, unexpected metric shape, or deployment issue.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: input
+    id: linux_distro_kernel
+    attributes:
+      label: Distro and kernel
+      description: Distro + kernel version (e.g. Ubuntu 22.04, 6.5.0)
+      placeholder: Ubuntu 22.04, 6.5.0-41-generic
+    validations:
+      required: true
+  - type: dropdown
+    id: gpu_vendor
+    attributes:
+      label: GPU vendor
+      options:
+        - NVIDIA
+        - AMD
+        - Intel
+        - None
+    validations:
+      required: true
+  - type: dropdown
+    id: rdma_hardware
+    attributes:
+      label: RDMA hardware present?
+      options:
+        - "Yes"
+        - "No"
+        - Unknown
+    validations:
+      required: true
+  - type: input
+    id: exporter_script
+    attributes:
+      label: Exporter script
+      description: Which script failed (e.g. scripts/gpu-exporter.sh)
+      placeholder: scripts/gpu-exporter.sh
+    validations:
+      required: true
+  - type: textarea
+    id: expected_output
+    attributes:
+      label: Expected output
+      description: Expected .prom content or metric
+      placeholder: nixl_gpu_memory_used_bytes{vendor="nvidia",index="0"} ...
+    validations:
+      required: true
+  - type: textarea
+    id: actual_output
+    attributes:
+      label: Actual output
+      description: Actual output or error
+      placeholder: Paste stderr, .prom output, or failed assertion here.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce_steps
+    attributes:
+      label: Steps to reproduce
+      description: Steps to reproduce
+      placeholder: |
+        1. Run OUT_DIR=/tmp/prom bash scripts/collect-all.sh
+        2. Inspect /tmp/prom/nixl_gpu.prom
+        3. Observe missing metrics
+    validations:
+      required: true

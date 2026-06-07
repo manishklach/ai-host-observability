@@ -1,0 +1,40 @@
+name: Feature request
+description: Suggest a new signal, exporter surface, or observability workflow.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: input
+    id: signal_requested
+    attributes:
+      label: Signal requested
+      description: Metric or kernel surface to expose
+      placeholder: nixl_host_iommu_fault_total
+    validations:
+      required: true
+  - type: input
+    id: source_subsystem
+    attributes:
+      label: Source subsystem
+      description: e.g. /proc/net/tcp6, ethtool -S, rocm-smi
+      placeholder: /sys/kernel/debug/mlx5/*/pages/fw_pages_total
+    validations:
+      required: true
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Use case
+      description: Why this matters for AI/GPU infrastructure
+      placeholder: Explain the operator problem this metric would help solve.
+    validations:
+      required: true
+  - type: dropdown
+    id: will_pr
+    attributes:
+      label: Would you open a PR?
+      options:
+        - "Yes"
+        - "No"
+        - Maybe
+    validations:
+      required: true
