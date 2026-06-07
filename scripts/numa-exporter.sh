@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# shellcheck disable=SC2250,SC2310,SC2312  # Compact conditionals and fallback reads are intentional in exporter code.
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/lib/prom.sh
@@ -26,12 +27,12 @@ for meminfo in "${SYS_ROOT}"/devices/system/node/node*/meminfo; do
   node="$(basename "$(dirname "$meminfo")")"
   while read -r _node _id key value _unit; do
     case "$key" in
-      MemFree:|MemUsed:|FilePages:)
-        is_integer "$value" && emit_metric "nixl_numa_meminfo_bytes" "$((value * 1024))" "node=${node}" "field=$(tr '[:upper:]' '[:lower:]' <<<"${key%:}")"
-        ;;
-      HugePages_Total:|HugePages_Free:)
-        is_integer "$value" && emit_metric "nixl_numa_hugepages" "$value" "node=${node}" "field=$(tr '[:upper:]' '[:lower:]' <<<"${key%:}")"
-        ;;
+    MemFree: | MemUsed: | FilePages:)
+      is_integer "$value" && emit_metric "nixl_numa_meminfo_bytes" "$((value * 1024))" "node=${node}" "field=$(tr '[:upper:]' '[:lower:]' <<<"${key%:}")"
+      ;;
+    HugePages_Total: | HugePages_Free:)
+      is_integer "$value" && emit_metric "nixl_numa_hugepages" "$value" "node=${node}" "field=$(tr '[:upper:]' '[:lower:]' <<<"${key%:}")"
+      ;;
     esac
   done <"$meminfo"
 done
@@ -41,9 +42,9 @@ for numastat in "${SYS_ROOT}"/devices/system/node/node*/numastat; do
   node="$(basename "$(dirname "$numastat")")"
   while read -r key value; do
     case "$key" in
-      numa_hit|numa_miss|numa_foreign|interleave_hit|local_node|other_node)
-        is_integer "$value" && emit_metric "nixl_numa_stat" "$value" "node=${node}" "field=${key}"
-        ;;
+    numa_hit | numa_miss | numa_foreign | interleave_hit | local_node | other_node)
+      is_integer "$value" && emit_metric "nixl_numa_stat" "$value" "node=${node}" "field=${key}"
+      ;;
     esac
   done <"$numastat"
 done

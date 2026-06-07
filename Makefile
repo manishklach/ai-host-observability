@@ -47,7 +47,9 @@ test-bats:
 
 lint:
 	find scripts tests -name '*.sh' -print0 | xargs -0 -n1 bash -n
-	if command -v shellcheck >/dev/null 2>&1; then find scripts tests -name '*.sh' -print0 | xargs -0 shellcheck; fi
+	if command -v shellcheck >/dev/null 2>&1; then SHELLCHECK_OPTS='-x -e SC2249,SC2250,SC2310,SC2312' shellcheck scripts/*.sh tests/helpers.bash tests/*.bats; fi
+	if ! command -v shfmt >/dev/null 2>&1; then echo "shfmt is required for make lint"; exit 1; fi
+	shfmt -d scripts/ tests/
 
 smoke:
 	OUT_DIR=/tmp/ai-host-observability-prom bash scripts/collect-all.sh

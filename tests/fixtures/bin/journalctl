@@ -9,4 +9,3 @@ cat <<'EOF'
 [    5.0] iommu: DMA fault detected
 [    6.0] NVRM: Xid 32
 EOF
-

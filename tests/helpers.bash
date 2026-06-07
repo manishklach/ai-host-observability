@@ -36,7 +36,9 @@ run_exporter_direct() {
   local script_name="$1"
   local output_file="$2"
   while IFS= read -r assignment; do
-    export "$assignment"
+    local name="${assignment%%=*}"
+    local value="${assignment#*=}"
+    export "${name}=${value}"
   done < <(common_env)
 
   bash "${ROOT_DIR}/scripts/${script_name}" >"${output_file}"
@@ -46,13 +48,15 @@ run_exporter_direct_missing_roots() {
   local script_name="$1"
   local output_file="$2"
   while IFS= read -r assignment; do
-    export "$assignment"
+    local name="${assignment%%=*}"
+    local value="${assignment#*=}"
+    export "${name}=${value}"
   done < <(common_env)
 
   PROC_ROOT="/nonexistent" \
-  SYS_ROOT="/nonexistent" \
-  DEBUGFS_ROOT="/nonexistent" \
-  bash "${ROOT_DIR}/scripts/${script_name}" >"${output_file}"
+    SYS_ROOT="/nonexistent" \
+    DEBUGFS_ROOT="/nonexistent" \
+    bash "${ROOT_DIR}/scripts/${script_name}" >"${output_file}"
 }
 
 run_collect_one() {
@@ -61,13 +65,15 @@ run_collect_one() {
   local out_dir="$3"
 
   while IFS= read -r assignment; do
-    export "$assignment"
+    local name="${assignment%%=*}"
+    local value="${assignment#*=}"
+    export "${name}=${value}"
   done < <(common_env)
 
   PROC_ROOT="${proc_root}" \
-  OUT_DIR="${out_dir}" \
-  EXPORTERS="${exporter}" \
-  bash "${ROOT_DIR}/scripts/collect-all.sh"
+    OUT_DIR="${out_dir}" \
+    EXPORTERS="${exporter}" \
+    bash "${ROOT_DIR}/scripts/collect-all.sh"
 }
 
 assert_valid_metric_line() {

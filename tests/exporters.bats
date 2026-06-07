@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+# shellcheck disable=SC2154  # Bats populates TEST_TMPDIR/FIXTURE_DIR/ROOT_DIR via setup hooks and loaded helpers.
 
 load './helpers.bash'
 
@@ -16,12 +17,12 @@ assert_exporter_direct() {
   local output_file="${TEST_TMPDIR}/${script_name}.prom"
 
   run run_exporter_direct "${script_name}" "${output_file}"
-  [ "$status" -eq 0 ]
-  [ -s "${output_file}" ]
+  [[ "${status}" -eq 0 ]]
+  [[ -s "${output_file}" ]]
   run assert_valid_metric_line "${output_file}"
-  [ "$status" -eq 0 ]
+  [[ "${status}" -eq 0 ]]
   run assert_metric_present "${expected_metric}" "${output_file}"
-  [ "$status" -eq 0 ]
+  [[ "${status}" -eq 0 ]]
 }
 
 assert_exporter_missing_proc() {
@@ -30,10 +31,10 @@ assert_exporter_missing_proc() {
   local output_file="${TEST_TMPDIR}/${script_name}-missing.prom"
 
   run run_exporter_direct_missing_roots "${script_name}" "${output_file}"
-  [ "$status" -eq 0 ]
-  [ -f "${output_file}" ]
+  [[ "${status}" -eq 0 ]]
+  [[ -f "${output_file}" ]]
   run assert_scrape_success_zero "${scrape_metric}" "${output_file}"
-  [ "$status" -eq 0 ]
+  [[ "${status}" -eq 0 ]]
 }
 
 assert_exporter_out_dir() {
@@ -42,15 +43,15 @@ assert_exporter_out_dir() {
   mkdir -p "${output_dir}"
 
   run run_collect_one "${exporter}" "${FIXTURE_DIR}/proc" "${output_dir}"
-  [ "$status" -eq 0 ]
-  [ -f "${output_dir}/${exporter}.prom" ]
-  [ -s "${output_dir}/${exporter}.prom" ]
+  [[ "${status}" -eq 0 ]]
+  [[ -f "${output_dir}/${exporter}.prom" ]]
+  [[ -s "${output_dir}/${exporter}.prom" ]]
 }
 
 @test "nixl_host_mem direct fixture run emits Prometheus metrics" {
   assert_exporter_direct "nixl-host-mem-exporter.sh" 'nixl_host_fw_pages_sum '
   run assert_metric_present 'nixl_host_meminfo_bytes{field="memavailable"}' "${TEST_TMPDIR}/nixl-host-mem-exporter.sh.prom"
-  [ "$status" -eq 0 ]
+  [[ "${status}" -eq 0 ]]
 }
 
 @test "nixl_host_mem missing proc path emits wrapper failure metric" {
@@ -185,11 +186,13 @@ assert_exporter_out_dir() {
   local output_file="${TEST_TMPDIR}/collect-amd-gpu.sh.prom"
 
   while IFS= read -r assignment; do
-    export "$assignment"
+    local name="${assignment%%=*}"
+    local value="${assignment#*=}"
+    export "${name}=${value}"
   done < <(common_env)
 
   run env ROCM_SMI="${TEST_TMPDIR}/missing-rocm-smi" bash "${ROOT_DIR}/scripts/collect-amd-gpu.sh"
-  [ "$status" -eq 0 ]
+  [[ "${status}" -eq 0 ]]
   [[ "$output" == *'nixl_amd_gpu_scrape_success 0 '* ]]
 }
 
@@ -207,10 +210,12 @@ assert_exporter_out_dir() {
 
 @test "nixl_intel_gpu emits success 0 when intel_gpu_top is absent" {
   while IFS= read -r assignment; do
-    export "$assignment"
+    local name="${assignment%%=*}"
+    local value="${assignment#*=}"
+    export "${name}=${value}"
   done < <(common_env)
 
   run env INTEL_GPU_TOP="${TEST_TMPDIR}/missing-intel-gpu-top" bash "${ROOT_DIR}/scripts/collect-intel-gpu.sh"
-  [ "$status" -eq 0 ]
+  [[ "${status}" -eq 0 ]]
   [[ "$output" == *'nixl_intel_gpu_scrape_success 0 '* ]]
 }

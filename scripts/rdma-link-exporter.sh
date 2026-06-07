@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# shellcheck disable=SC2249,SC2250,SC2310,SC2312  # Compact conditionals and fallback reads are intentional in exporter code; selected case patterns are exhaustive for this collector.
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/lib/prom.sh
@@ -53,9 +54,9 @@ for iface in "${interfaces[@]}"; do
       key="$(xargs <<<"$key")"
       value="$(xargs <<<"$value")"
       case "$(sanitize_stat_name "$key")" in
-        rx_discards_phy|tx_discards_phy|rx_errors|tx_errors|rx_crc_errors_phy|link_down_events_phy|rx_prio0_buf_discard|tx_timeout|rx_out_of_buffer)
-          is_integer "$value" && emit_metric "nixl_net_ethtool_stat" "$value" "iface=${iface}" "stat=$(sanitize_stat_name "$key")"
-          ;;
+      rx_discards_phy | tx_discards_phy | rx_errors | tx_errors | rx_crc_errors_phy | link_down_events_phy | rx_prio0_buf_discard | tx_timeout | rx_out_of_buffer)
+        is_integer "$value" && emit_metric "nixl_net_ethtool_stat" "$value" "iface=${iface}" "stat=$(sanitize_stat_name "$key")"
+        ;;
       esac
     done < <("$ETHTOOL" -S "$iface" 2>/dev/null || true)
   fi

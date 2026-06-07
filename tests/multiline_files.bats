@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+# shellcheck disable=SC2034,SC2154  # Bats uses locals inside the inline shell, and ROOT_DIR is populated by the shared test setup.
 
 load './helpers.bash'
 
@@ -50,5 +51,5 @@ teardown() {
       done
     done
   ' _ "${ROOT_DIR}" "${patterns[@]}"
-  [ "$status" -eq 0 ]
+  [[ "${status}" -eq 0 ]]
 }

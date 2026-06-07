@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# shellcheck disable=SC2250,SC2310,SC2312  # Compact conditionals and fallback reads are intentional in exporter code.
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/lib/prom.sh
@@ -25,10 +26,10 @@ if [[ -r "${PROC_ROOT}/pressure/cpu" ]]; then
     avg10="" avg60="" avg300="" total=""
     for token in $rest; do
       case "$token" in
-        avg10=*) avg10="${token#avg10=}" ;;
-        avg60=*) avg60="${token#avg60=}" ;;
-        avg300=*) avg300="${token#avg300=}" ;;
-        total=*) total="${token#total=}" ;;
+      avg10=*) avg10="${token#avg10=}" ;;
+      avg60=*) avg60="${token#avg60=}" ;;
+      avg300=*) avg300="${token#avg300=}" ;;
+      total=*) total="${token#total=}" ;;
       esac
     done
     is_number "$avg10" && emit_metric "nixl_cpu_psi_avg" "$avg10" "scope=${scope}" "window=10s"

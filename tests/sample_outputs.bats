@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+# shellcheck disable=SC2154  # Bats populates ROOT_DIR via setup hooks and loaded helpers.
 
 load './helpers.bash'
 
@@ -15,8 +16,8 @@ teardown() {
   local file
 
   for file in "${sample_dir}"/*.prom; do
-    [ -s "${file}" ]
+    [[ -s "${file}" ]]
     run assert_prom_sample_valid "${file}"
-    [ "$status" -eq 0 ]
+    [[ "${status}" -eq 0 ]]
   done
 }

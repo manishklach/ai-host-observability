@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# shellcheck disable=SC2250,SC2310,SC2312  # Brace-style and set -e informational warnings are intentionally relaxed here for readability and guarded fallback paths.
 
 SCRIPT_DIR="${SCRIPT_DIR:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)}"
 LIB_DIR="${LIB_DIR:-${SCRIPT_DIR}/lib}"

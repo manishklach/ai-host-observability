@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -euo pipefail
+# shellcheck disable=SC2250  # The helper library keeps variable references compact for readability across sourced contexts.
 
 if [[ -n "${AI_HOST_PROM_LIB_SOURCED:-}" ]]; then
   return 0
@@ -68,7 +70,10 @@ emit_metric() {
       raw="${label#*=}"
       rendered+=("${key}=\"$(escape_label_value "$raw")\"")
     done
-    printf '%s{%s} %s %s\n' "$name" "$(IFS=,; printf '%s' "${rendered[*]}")" "$value" "$PROM_TIMESTAMP"
+    printf '%s{%s} %s %s\n' "$name" "$(
+      IFS=,
+      printf '%s' "${rendered[*]}"
+    )" "$value" "$PROM_TIMESTAMP"
   else
     printf '%s %s %s\n' "$name" "$value" "$PROM_TIMESTAMP"
   fi

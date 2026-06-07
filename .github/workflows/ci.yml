@@ -7,6 +7,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      SHELLCHECK_OPTS: -x -e SC2249,SC2250,SC2310,SC2312
     steps:
       # Keep CI close to the operator install path: syntax, lint, tests, packaging surfaces.
       - uses: actions/checkout@v4
@@ -18,10 +20,29 @@ jobs:
 
       - name: Install test tools
         run: |
-          sudo apt-get install -y shellcheck jq python3-yaml systemd
+          sudo apt-get install -y jq python3-yaml systemd shfmt
 
       - name: Full test suite
         run: make test
+
+      - name: Lint (make lint)
+        run: make lint
+
+      - name: Lint (shellcheck scripts)
+        uses: koalaman/shellcheck-action@v1
+        with:
+          version: v0.10.0
+          severity: warning
+          check_together: true
+          scandir: ./scripts
+
+      - name: Lint (shellcheck tests)
+        uses: koalaman/shellcheck-action@v1
+        with:
+          version: v0.10.0
+          severity: warning
+          check_together: true
+          scandir: ./tests
 
       - name: Validate Grafana JSON
         run: jq empty grafana/ai-host-overview.json

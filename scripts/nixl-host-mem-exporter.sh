@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# shellcheck disable=SC2250,SC2310,SC2312  # Compact conditionals and fallback reads are intentional in exporter code.
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/lib/prom.sh
@@ -25,10 +26,10 @@ emit_psi_metrics() {
     local avg10="" avg60="" avg300="" total="" token
     for token in $rest; do
       case "$token" in
-        avg10=*) avg10="${token#avg10=}" ;;
-        avg60=*) avg60="${token#avg60=}" ;;
-        avg300=*) avg300="${token#avg300=}" ;;
-        total=*) total="${token#total=}" ;;
+      avg10=*) avg10="${token#avg10=}" ;;
+      avg60=*) avg60="${token#avg60=}" ;;
+      avg300=*) avg300="${token#avg300=}" ;;
+      total=*) total="${token#total=}" ;;
       esac
     done
     is_number "$avg10" && emit_metric "$avg_metric" "$avg10" "${extra_labels[@]}" "scope=${scope}" "window=10s"
@@ -70,11 +71,11 @@ emit_help "nixl_host_meminfo_bytes" gauge "Selected ${PROC_ROOT}/meminfo values 
 if [[ -r "${PROC_ROOT}/meminfo" ]]; then
   while read -r key value _unit; do
     case "$key" in
-      MemTotal:|MemAvailable:|MemFree:|SwapFree:|Buffers:|Cached:)
-        if is_integer "$value"; then
-          emit_metric "nixl_host_meminfo_bytes" "$((value * 1024))" "field=$(tr '[:upper:]' '[:lower:]' <<<"${key%:}")"
-        fi
-        ;;
+    MemTotal: | MemAvailable: | MemFree: | SwapFree: | Buffers: | Cached:)
+      if is_integer "$value"; then
+        emit_metric "nixl_host_meminfo_bytes" "$((value * 1024))" "field=$(tr '[:upper:]' '[:lower:]' <<<"${key%:}")"
+      fi
+      ;;
     esac
   done <"${PROC_ROOT}/meminfo"
 fi
@@ -98,9 +99,9 @@ emit_help "nixl_host_vmstat" counter "Selected memory-pressure counters from ${P
 if [[ -r "${PROC_ROOT}/vmstat" ]]; then
   while read -r key value; do
     case "$key" in
-      pgscan_kswapd|pgscan_direct|pgsteal_kswapd|pgsteal_direct|pgmajfault|pswpin|pswpout)
-        is_integer "$value" && emit_metric "nixl_host_vmstat" "$value" "field=${key}"
-        ;;
+    pgscan_kswapd | pgscan_direct | pgsteal_kswapd | pgsteal_direct | pgmajfault | pswpin | pswpout)
+      is_integer "$value" && emit_metric "nixl_host_vmstat" "$value" "field=${key}"
+      ;;
     esac
   done <"${PROC_ROOT}/vmstat"
 fi
@@ -126,9 +127,9 @@ read_cgroup_v1_memory() {
   if [[ -r "$events_file" ]]; then
     while read -r key value; do
       case "$key" in
-        low|high|max|oom|oom_kill)
-          is_integer "$value" && emit_metric "nixl_host_cgroup_memory_events" "$value" "path=${path}" "event=${key}"
-          ;;
+      low | high | max | oom | oom_kill)
+        is_integer "$value" && emit_metric "nixl_host_cgroup_memory_events" "$value" "path=${path}" "event=${key}"
+        ;;
       esac
     done <"$events_file"
   fi
@@ -149,9 +150,9 @@ read_cgroup_v2_memory() {
   if [[ -r "${path}/memory.events" ]]; then
     while read -r key value; do
       case "$key" in
-        low|high|max|oom|oom_kill)
-          is_integer "$value" && emit_metric "nixl_host_cgroup_memory_events" "$value" "path=${path}" "event=${key}"
-          ;;
+      low | high | max | oom | oom_kill)
+        is_integer "$value" && emit_metric "nixl_host_cgroup_memory_events" "$value" "path=${path}" "event=${key}"
+        ;;
       esac
     done <"${path}/memory.events"
   fi
@@ -171,14 +172,13 @@ if [[ -n "${CGROUP_PATH:-}" && -d "${CGROUP_PATH}" ]]; then
 
   cgroup_version="$(detect_cgroup_version "${CGROUP_PATH}")"
   case "$cgroup_version" in
-    v1)
-      read_cgroup_v1_memory "${CGROUP_PATH}"
-      ;;
-    v2)
-      read_cgroup_v2_memory "${CGROUP_PATH}"
-      ;;
-    *)
-      ;;
+  v1)
+    read_cgroup_v1_memory "${CGROUP_PATH}"
+    ;;
+  v2)
+    read_cgroup_v2_memory "${CGROUP_PATH}"
+    ;;
+  *) ;;
   esac
 fi
 

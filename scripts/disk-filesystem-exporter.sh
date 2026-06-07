@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# shellcheck disable=SC2250,SC2310,SC2312  # Compact conditionals and fallback reads are intentional in exporter code.
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/lib/prom.sh
@@ -23,7 +24,7 @@ emit_help "nixl_diskstat_total" counter "Selected ${PROC_ROOT}/diskstats counter
 if [[ -r "${PROC_ROOT}/diskstats" ]]; then
   while read -r _major _minor device reads_completed _reads_merged sectors_read _ms_reading writes_completed _writes_merged sectors_written _ms_writing _ios_in_progress ms_io weighted_ms_io _rest; do
     case "$device" in
-      loop*|ram*|fd*|sr*) continue ;;
+    loop* | ram* | fd* | sr*) continue ;;
     esac
     is_integer "$reads_completed" && emit_metric "nixl_diskstat_total" "$reads_completed" "device=${device}" "field=reads_completed"
     is_integer "$sectors_read" && emit_metric "nixl_diskstat_total" "$sectors_read" "device=${device}" "field=sectors_read"
@@ -38,7 +39,7 @@ emit_help "nixl_filesystem_bytes" gauge "Filesystem size, used, and available by
 if command_exists "$DF"; then
   while read -r filesystem fstype size_bytes used_bytes avail_bytes mount; do
     case "$fstype" in
-      tmpfs|devtmpfs|overlay|squashfs) continue ;;
+    tmpfs | devtmpfs | overlay | squashfs) continue ;;
     esac
     is_integer "$size_bytes" && emit_metric "nixl_filesystem_bytes" "$size_bytes" "filesystem=${filesystem}" "mount=${mount}" "fstype=${fstype}" "field=size"
     is_integer "$used_bytes" && emit_metric "nixl_filesystem_bytes" "$used_bytes" "filesystem=${filesystem}" "mount=${mount}" "fstype=${fstype}" "field=used"

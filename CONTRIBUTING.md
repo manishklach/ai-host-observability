@@ -8,6 +8,25 @@
 4. Update `docs/metrics.md` if you add or rename metrics
 5. Update `CHANGELOG.md` for user-visible changes
 
+## Tooling
+
+Install the local formatting and lint tools you need before sending a pull request.
+
+Ubuntu / Debian:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y bats shellcheck
+curl -fsSL https://github.com/mvdan/sh/releases/download/v3.10.0/shfmt_v3.10.0_linux_amd64 -o /usr/local/bin/shfmt
+sudo chmod +x /usr/local/bin/shfmt
+```
+
+macOS:
+
+```bash
+brew install bats-core shellcheck shfmt
+```
+
 ## Style
 
 - Keep shell scripts Bash-only and dependency-light
@@ -19,4 +38,3 @@
 - Explain why a metric or alert was added
 - Include before/after examples for any output-format changes
 - Keep alerts conservative unless there is strong production evidence
-
