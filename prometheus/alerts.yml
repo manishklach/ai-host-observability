@@ -1,158 +1,82 @@
 groups:
   - name: ai-host-observability
     rules:
-      # Host memory available is trending low. Tune threshold per fleet size.
-      - alert: HostMemoryAvailableLow
-        expr: nixl_host_meminfo_bytes{field="memavailable"} < 8e9
-        for: 10m
-        labels:
-          severity: warning
-        annotations:
-          summary: Host available memory is low
-          description: MemAvailable has remained below 8 GiB for 10 minutes.
-
-      # PSI is a better early signal than waiting for OOM.
       - alert: HostMemoryPSIHigh
-        expr: nixl_host_memory_psi_avg{scope="some",window="60s"} > 5
+        expr: nixl_host_memory_psi_avg{scope="full",window="60s"} > 0.1
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: Host memory PSI is elevated
-          description: Memory pressure has been elevated for 5 minutes.
+          summary: Host memory PSI has stayed elevated.
+          description: Full memory PSI over the 60 second window has remained above 0.1 for five minutes, which usually means the host is stalling on memory reclaim or direct allocation pressure. Check MemAvailable, reclaim counters, cgroup growth, and whether RDMA registration or pinned memory is expanding.
+          runbook_url: docs/runbooks/HostMemoryPSIHigh.md
 
-      # Direct reclaim is a strong indicator that normal free memory is exhausted.
-      - alert: HostReclaimPressureHigh
-        expr: rate(nixl_host_vmstat{field="pgscan_direct"}[10m]) > 100
-        for: 10m
-        labels:
-          severity: warning
-        annotations:
-          summary: Direct reclaim pressure is high
-          description: The kernel is performing direct reclaim at a sustained rate.
-
-      - alert: HostSwapActivityDetected
-        expr: rate(nixl_host_vmstat{field=~"pswpin|pswpout"}[10m]) > 0
-        for: 10m
-        labels:
-          severity: warning
-        annotations:
-          summary: Host swap activity detected
-          description: Swap-in or swap-out activity has been detected.
-
-      - alert: Mlx5FirmwarePagesGrowingFast
-        expr: rate(nixl_host_fw_pages_sum[15m]) > 100
-        for: 15m
-        labels:
-          severity: warning
-        annotations:
-          summary: mlx5 firmware pages are growing quickly
-          description: Host-side registration footprint is growing faster than expected.
-
-      - alert: CgroupOOMKillDetected
-        expr: increase(nixl_host_cgroup_memory_events{event="oom_kill"}[15m]) > 0
-        for: 0m
+      - alert: HostMemoryPSICritical
+        expr: nixl_host_memory_psi_avg{scope="full",window="60s"} > 0.3
+        for: 2m
         labels:
           severity: critical
         annotations:
-          summary: Cgroup OOM kill detected
-          description: A monitored cgroup has seen an OOM kill in the last 15 minutes.
+          summary: Host memory PSI is at a critical level.
+          description: Full memory PSI over the 60 second window has exceeded 0.3 for two minutes, which usually means the host is spending a large fraction of wall time stalled on memory pressure. Check cgroup OOM activity, MemAvailable collapse, reclaim spikes, and whether the node is heading toward a host OOM or severe tail latency.
+          runbook_url: docs/runbooks/HostMemoryPSICritical.md
 
-      - alert: SoftnetDropsIncreasing
-        expr: rate(nixl_softnet_stat_total{field="dropped"}[10m]) > 0
-        for: 10m
-        labels:
-          severity: warning
-        annotations:
-          summary: Softnet drops are increasing
-          description: Per-CPU softnet drops indicate host networking backlog pressure.
-
-      - alert: NICLinkDownEvents
-        expr: increase(nixl_net_ethtool_stat{stat="link_down_events_phy"}[30m]) > 0
+      - alert: RDMAFwPagesGrowing
+        expr: increase(nixl_host_fw_pages_sum[15m]) > 0
         for: 0m
         labels:
           severity: warning
         annotations:
-          summary: NIC link down events detected
-          description: One or more NICs reported link-down events.
+          summary: RDMA firmware page usage is growing.
+          description: The summed mlx5 firmware page footprint has increased over the last fifteen minutes, which can indicate rising host-side registration pressure even when GPU dashboards still look healthy. Check multi-HCA fan-out, buffer registration behavior, and whether host memory pressure is growing in parallel.
+          runbook_url: docs/runbooks/RDMAFwPagesGrowing.md
 
-      - alert: RDMAErrorsIncreasing
-        expr: increase(nixl_infiniband_counter{counter=~"port_rcv_errors|port_xmit_discards"}[10m]) > 0
-        for: 10m
+      - alert: GPUBar1NearFull
+        expr: nixl_gpu_bar1_used_bytes / nixl_gpu_bar1_total_bytes > 0.9
+        for: 3m
         labels:
           severity: warning
         annotations:
-          summary: RDMA error counters are increasing
-          description: InfiniBand transport error counters are rising.
+          summary: GPU BAR1 usage is near full.
+          description: BAR1 utilization has stayed above 90 percent for three minutes, which can signal host-GPU mapping pressure and transport-side strain around large working sets. Check BAR1 alongside pinned memory, GPU transfer paths, and whether the host is also showing reclaim or PCIe-side distress.
+          runbook_url: docs/runbooks/GPUBar1NearFull.md
 
-      - alert: PCIELinkDowngraded
-        expr: nixl_gpu_pcie_link_width < 8
-        for: 15m
-        labels:
-          severity: warning
-        annotations:
-          summary: GPU PCIe link width appears reduced
-          description: A GPU is reporting a PCIe link width below x8.
-
-      - alert: GPUPowerOrThermalLimit
-        expr: nixl_gpu_temperature_celsius > 85 or nixl_gpu_power_draw_watts > 650
-        for: 10m
-        labels:
-          severity: warning
-        annotations:
-          summary: GPU thermal or power pressure detected
-          description: GPU temperature or power draw has stayed elevated.
-
-      - alert: GPUBar1PressureHigh
-        expr: nixl_gpu_bar1_used_bytes / nixl_gpu_bar1_total_bytes > 0.8
-        for: 10m
-        labels:
-          severity: warning
-        annotations:
-          summary: GPU BAR1 pressure is high
-          description: BAR1 usage has exceeded 80 percent.
-
-      - alert: KernelOOMDetected
-        expr: increase(nixl_kernel_log_pattern_total{pattern="oom"}[30m]) > 0
-        for: 0m
+      - alert: KernelOOMOccurred
+        expr: rate(nixl_kernel_log_pattern_total{pattern="oom"}[5m]) > 0
+        for: 2m
         labels:
           severity: critical
         annotations:
-          summary: Kernel OOM patterns detected
-          description: Kernel logs have recorded OOM activity.
+          summary: Kernel OOM activity has been detected.
+          description: Kernel log OOM pattern counters are increasing over the last five minutes, which means the node is already recording OOM behavior rather than only trending toward it. Check killed processes, cgroup memory events, reclaim counters, and whether RDMA registration, pinned memory, or runaway processes are consuming host RAM.
+          runbook_url: docs/runbooks/KernelOOMOccurred.md
 
-      - alert: KernelAEREventsDetected
-        expr: increase(nixl_kernel_log_pattern_total{pattern="pcie_aer"}[30m]) > 0
+      - alert: NICRxDropsIncreasing
+        expr: rate(nixl_softnet_stat_total{field="dropped"}[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Host receive drops are increasing.
+          description: Softnet dropped counters are rising faster than ten events per second over five minutes, which usually means the host networking path is falling behind. Check CPU softirq load, IRQ affinity, ethtool drop counters, queue pressure, and whether RDMA or bulk ingress traffic is saturating the node.
+          runbook_url: docs/runbooks/NICRxDropsIncreasing.md
+
+      - alert: GPUECCErrorsDetected
+        expr: increase(nixl_gpu_ecc_volatile_total[10m]) > 0
         for: 0m
         labels:
           severity: warning
         annotations:
-          summary: PCIe AER events detected
-          description: Kernel logs show new PCIe/AER related events.
+          summary: GPU ECC errors were detected.
+          description: Volatile GPU ECC error counters increased during the last ten minutes, which may indicate a memory integrity issue on one or more GPUs. Check the affected GPU index, recent workloads, thermal conditions, and whether driver or hardware logs show correlated faults.
+          runbook_url: docs/runbooks/GPUECCErrorsDetected.md
 
-      - alert: VFIOIOMMUErrorsDetected
-        expr: increase(nixl_kernel_log_pattern_total{pattern=~"vfio|iommu_dma"}[30m]) > 0
-        for: 0m
+      - alert: ExporterNotRunning
+        expr: ai_host_exporter_last_run_success == 0
+        for: 3m
         labels:
           severity: warning
         annotations:
-          summary: VFIO or IOMMU related errors detected
-          description: Kernel logs show new VFIO or IOMMU error activity.
-
-      - alert: FilesystemInodesLow
-        expr: nixl_inode_nr{field="free"} < 10000
-        for: 15m
-        labels:
-          severity: warning
-        annotations:
-          summary: Filesystem free inode pool is low
-          description: Free inode counters are below the configured threshold.
-
-      - alert: NetworkDeviceErrorsIncreasing
-        expr: increase(nixl_netdev_total{field=~"rx_errs|tx_errs"}[15m]) > 0
-        for: 15m
-        labels:
-          severity: warning
-        annotations:
-          summary: Network device error counters are increasing
-          description: Receive or transmit error counters are increasing on one or more host network interfaces.
+          summary: An ai-host-observability exporter is not completing successfully.
+          description: The wrapper has reported one or more exporters in a failed state for at least three minutes. Check the exporter name, recent deployment or permission changes, missing host paths or vendor tools, and whether the textfile collector directory is writable.
+          runbook_url: docs/runbooks/ExporterNotRunning.md
