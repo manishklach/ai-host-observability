@@ -8,9 +8,10 @@ source "${SCRIPT_DIR}/lib/prom.sh"
 PROC_ROOT="${PROC_ROOT:-/proc}"
 INTEL_GPU_TOP="${INTEL_GPU_TOP:-intel_gpu_top}"
 
-require_directory "$PROC_ROOT" "PROC_ROOT"
-
 prom_begin_scrape "nixl_intel_gpu_scrape_success" "Whether the Intel GPU exporter completed successfully."
+if ! require_directory "$PROC_ROOT" "PROC_ROOT"; then
+  exit 0
+fi
 emit_help "nixl_gpu_utilization_percent" gauge "GPU utilization percent."
 emit_help "nixl_intel_gpu_intel_gpu_top_version" gauge "intel_gpu_top version detected."
 

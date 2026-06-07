@@ -14,9 +14,10 @@ NVIDIA_SMI="${NVIDIA_SMI:-nvidia-smi}"
 ETHTOOL="${ETHTOOL:-ethtool}"
 DMESG="${DMESG:-dmesg}"
 
-require_directory "$PROC_ROOT" "PROC_ROOT"
-
 prom_begin_scrape "nixl_kernel_log_scan_success" "Whether the kernel log pattern scanner completed successfully."
+if ! require_directory "$PROC_ROOT" "PROC_ROOT"; then
+  exit 0
+fi
 emit_help "nixl_kernel_log_pattern_total" counter "Count of matching kernel log patterns since boot."
 
 tmpfile="$(mktemp)"

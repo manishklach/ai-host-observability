@@ -1,7 +1,7 @@
 pgscan_kswapd 111
 pgscan_direct 22
+pgmajfault 7
 pgsteal_kswapd 333
 pgsteal_direct 44
 pswpin 5
 pswpout 6
-

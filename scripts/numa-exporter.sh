@@ -13,9 +13,10 @@ JOURNALCTL="${JOURNALCTL:-journalctl}"
 NVIDIA_SMI="${NVIDIA_SMI:-nvidia-smi}"
 ETHTOOL="${ETHTOOL:-ethtool}"
 
-require_directory "$PROC_ROOT" "PROC_ROOT"
-
 prom_begin_scrape "nixl_numa_scrape_success" "Whether the NUMA exporter completed successfully."
+if ! require_directory "$PROC_ROOT" "PROC_ROOT"; then
+  exit 0
+fi
 
 emit_help "nixl_numa_meminfo_bytes" gauge "Selected per-node meminfo values converted to bytes."
 emit_help "nixl_numa_hugepages" gauge "Selected per-node hugepage counts."

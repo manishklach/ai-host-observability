@@ -28,6 +28,7 @@ INTEL_GPU_TOP=${FIXTURE_DIR}/bin/intel_gpu_top
 JOURNALCTL=${FIXTURE_DIR}/bin/journalctl
 INTERESTING_DRIVERS_REGEX=.*
 NET_IFACES=eth0
+PATH=${FIXTURE_DIR}/bin:${PATH}
 EOF
 }
 
@@ -38,6 +39,19 @@ run_exporter_direct() {
     export "$assignment"
   done < <(common_env)
 
+  bash "${ROOT_DIR}/scripts/${script_name}" >"${output_file}"
+}
+
+run_exporter_direct_missing_roots() {
+  local script_name="$1"
+  local output_file="$2"
+  while IFS= read -r assignment; do
+    export "$assignment"
+  done < <(common_env)
+
+  PROC_ROOT="/nonexistent" \
+  SYS_ROOT="/nonexistent" \
+  DEBUGFS_ROOT="/nonexistent" \
   bash "${ROOT_DIR}/scripts/${script_name}" >"${output_file}"
 }
 
@@ -71,6 +85,12 @@ assert_wrapper_failure() {
   local exporter="$1"
   local file="$2"
   grep -Eq "ai_host_exporter_last_run_success\\{exporter=\"${exporter}\"\\} 0 [0-9]+$" "$file"
+}
+
+assert_scrape_success_zero() {
+  local metric_name="$1"
+  local file="$2"
+  grep -Eq "^${metric_name}(\\{[^}]*\\})? 0 [0-9]+$" "$file"
 }
 
 assert_prom_sample_valid() {

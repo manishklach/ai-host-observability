@@ -13,9 +13,10 @@ JOURNALCTL="${JOURNALCTL:-journalctl}"
 NVIDIA_SMI="${NVIDIA_SMI:-nvidia-smi}"
 ETHTOOL="${ETHTOOL:-ethtool}"
 
-require_directory "$PROC_ROOT" "PROC_ROOT"
-
 prom_begin_scrape "nixl_cpu_scrape_success" "Whether the CPU and IRQ exporter completed successfully."
+if ! require_directory "$PROC_ROOT" "PROC_ROOT"; then
+  exit 0
+fi
 
 emit_help "nixl_cpu_psi_avg" gauge "CPU PSI rolling averages from ${PROC_ROOT}/pressure/cpu."
 emit_help "nixl_cpu_psi_total" counter "CPU PSI total stall time in microseconds."

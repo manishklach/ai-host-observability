@@ -3,5 +3,8 @@ MemFree:         1024000 kB
 MemAvailable:    2048000 kB
 Buffers:          128000 kB
 Cached:           512000 kB
+SwapCached:         64000 kB
+Active:          2048000 kB
+Inactive:        1024000 kB
+SwapTotal:       8192000 kB
 SwapFree:        4096000 kB
-

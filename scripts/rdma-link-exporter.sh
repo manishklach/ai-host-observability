@@ -13,13 +13,14 @@ JOURNALCTL="${JOURNALCTL:-journalctl}"
 NVIDIA_SMI="${NVIDIA_SMI:-nvidia-smi}"
 ETHTOOL="${ETHTOOL:-ethtool}"
 
-require_directory "$PROC_ROOT" "PROC_ROOT"
-
 sanitize_stat_name() {
   tr ' /-' '___' <<<"$1"
 }
 
 prom_begin_scrape "nixl_rdma_scrape_success" "Whether the RDMA and NIC exporter completed successfully."
+if ! require_directory "$PROC_ROOT" "PROC_ROOT"; then
+  exit 0
+fi
 
 emit_help "nixl_net_up" gauge "Whether the network interface is operationally up."
 emit_help "nixl_net_speed_mbps" gauge "Interface speed in megabits per second when available."

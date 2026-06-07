@@ -14,9 +14,10 @@ NVIDIA_SMI="${NVIDIA_SMI:-nvidia-smi}"
 ETHTOOL="${ETHTOOL:-ethtool}"
 TOP_N="${TOP_N:-20}"
 
-require_directory "$PROC_ROOT" "PROC_ROOT"
-
 prom_begin_scrape "nixl_process_memory_scrape_success" "Whether the process memory exporter completed successfully."
+if ! require_directory "$PROC_ROOT" "PROC_ROOT"; then
+  exit 0
+fi
 
 emit_help "nixl_process_locked_bytes" gauge "Top processes by locked memory from ${PROC_ROOT}/<pid>/smaps_rollup."
 emit_help "nixl_process_vm_lck_bytes" gauge "Top processes by VmLck from ${PROC_ROOT}/<pid>/status."

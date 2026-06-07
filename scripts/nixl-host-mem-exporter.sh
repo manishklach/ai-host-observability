@@ -13,8 +13,6 @@ JOURNALCTL="${JOURNALCTL:-journalctl}"
 NVIDIA_SMI="${NVIDIA_SMI:-nvidia-smi}"
 ETHTOOL="${ETHTOOL:-ethtool}"
 
-require_directory "$PROC_ROOT" "PROC_ROOT"
-
 emit_psi_metrics() {
   local path="$1"
   local avg_metric="$2"
@@ -43,6 +41,9 @@ emit_psi_metrics() {
 }
 
 prom_begin_scrape "nixl_host_scrape_success" "Whether the host memory exporter completed successfully."
+if ! require_directory "$PROC_ROOT" "PROC_ROOT"; then
+  exit 0
+fi
 
 emit_help "nixl_host_fw_pages_total" gauge "mlx5 firmware pages currently allocated per device."
 emit_help "nixl_host_fw_pages_devices" gauge "Number of mlx5 devices with fw_pages_total available."

@@ -8,9 +8,10 @@ source "${SCRIPT_DIR}/lib/prom.sh"
 PROC_ROOT="${PROC_ROOT:-/proc}"
 ROCM_SMI="${ROCM_SMI:-rocm-smi}"
 
-require_directory "$PROC_ROOT" "PROC_ROOT"
-
 prom_begin_scrape "nixl_amd_gpu_scrape_success" "Whether the AMD GPU exporter completed successfully."
+if ! require_directory "$PROC_ROOT" "PROC_ROOT"; then
+  exit 0
+fi
 
 emit_help "nixl_gpu_temperature_celsius" gauge "GPU temperature in Celsius."
 emit_help "nixl_gpu_memory_used_bytes" gauge "GPU memory used in bytes."

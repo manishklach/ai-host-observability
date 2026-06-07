@@ -25,14 +25,14 @@ assert_exporter_direct() {
 }
 
 assert_exporter_missing_proc() {
-  local exporter="$1"
-  local output_dir="${TEST_TMPDIR}/${exporter}-missing"
-  mkdir -p "${output_dir}"
+  local script_name="$1"
+  local scrape_metric="$2"
+  local output_file="${TEST_TMPDIR}/${script_name}-missing.prom"
 
-  run run_collect_one "${exporter}" "${EMPTY_PROC_ROOT}" "${output_dir}"
+  run run_exporter_direct_missing_roots "${script_name}" "${output_file}"
   [ "$status" -eq 0 ]
-  [ -f "${output_dir}/${exporter}.prom" ]
-  run assert_wrapper_failure "${exporter}" "${output_dir}/${exporter}.prom"
+  [ -f "${output_file}" ]
+  run assert_scrape_success_zero "${scrape_metric}" "${output_file}"
   [ "$status" -eq 0 ]
 }
 
@@ -54,7 +54,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_host_mem missing proc path emits wrapper failure metric" {
-  assert_exporter_missing_proc "nixl_host_mem"
+  assert_exporter_missing_proc "nixl-host-mem-exporter.sh" "nixl_host_scrape_success"
 }
 
 @test "nixl_host_mem respects OUT_DIR via collect-all" {
@@ -66,7 +66,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_rdma_link missing proc path emits wrapper failure metric" {
-  assert_exporter_missing_proc "nixl_rdma_link"
+  assert_exporter_missing_proc "rdma-link-exporter.sh" "nixl_rdma_scrape_success"
 }
 
 @test "nixl_rdma_link respects OUT_DIR via collect-all" {
@@ -78,7 +78,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_cpu_irq missing proc path emits wrapper failure metric" {
-  assert_exporter_missing_proc "nixl_cpu_irq"
+  assert_exporter_missing_proc "cpu-irq-exporter.sh" "nixl_cpu_scrape_success"
 }
 
 @test "nixl_cpu_irq respects OUT_DIR via collect-all" {
@@ -90,7 +90,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_numa missing proc path emits wrapper failure metric" {
-  assert_exporter_missing_proc "nixl_numa"
+  assert_exporter_missing_proc "numa-exporter.sh" "nixl_numa_scrape_success"
 }
 
 @test "nixl_numa respects OUT_DIR via collect-all" {
@@ -102,7 +102,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_kernel_log missing proc path emits wrapper failure metric" {
-  assert_exporter_missing_proc "nixl_kernel_log"
+  assert_exporter_missing_proc "kernel-log-scan-exporter.sh" "nixl_kernel_log_scan_success"
 }
 
 @test "nixl_kernel_log respects OUT_DIR via collect-all" {
@@ -114,7 +114,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_gpu missing proc path emits wrapper failure metric" {
-  assert_exporter_missing_proc "nixl_gpu"
+  assert_exporter_missing_proc "gpu-exporter.sh" "nixl_gpu_scrape_success"
 }
 
 @test "nixl_gpu respects OUT_DIR via collect-all" {
@@ -126,7 +126,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_disk missing proc path emits wrapper failure metric" {
-  assert_exporter_missing_proc "nixl_disk"
+  assert_exporter_missing_proc "disk-filesystem-exporter.sh" "nixl_disk_scrape_success"
 }
 
 @test "nixl_disk respects OUT_DIR via collect-all" {
@@ -138,7 +138,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_network_stack missing proc path emits wrapper failure metric" {
-  assert_exporter_missing_proc "nixl_network_stack"
+  assert_exporter_missing_proc "network-stack-exporter.sh" "nixl_network_stack_scrape_success"
 }
 
 @test "nixl_network_stack respects OUT_DIR via collect-all" {
@@ -150,7 +150,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_process_memory missing proc path emits wrapper failure metric" {
-  assert_exporter_missing_proc "nixl_process_memory"
+  assert_exporter_missing_proc "process-memory-exporter.sh" "nixl_process_memory_scrape_success"
 }
 
 @test "nixl_process_memory respects OUT_DIR via collect-all" {
@@ -162,7 +162,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_pcie_vfio missing proc path emits wrapper failure metric" {
-  assert_exporter_missing_proc "nixl_pcie_vfio"
+  assert_exporter_missing_proc "pcie-vfio-exporter.sh" "nixl_pcie_scrape_success"
 }
 
 @test "nixl_pcie_vfio respects OUT_DIR via collect-all" {
@@ -174,7 +174,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_amd_gpu missing proc path emits wrapper failure metric" {
-  assert_exporter_missing_proc "nixl_amd_gpu"
+  assert_exporter_missing_proc "collect-amd-gpu.sh" "nixl_amd_gpu_scrape_success"
 }
 
 @test "nixl_amd_gpu respects OUT_DIR via collect-all" {
@@ -198,7 +198,7 @@ assert_exporter_out_dir() {
 }
 
 @test "nixl_intel_gpu missing proc path emits wrapper failure metric" {
-  assert_exporter_missing_proc "nixl_intel_gpu"
+  assert_exporter_missing_proc "collect-intel-gpu.sh" "nixl_intel_gpu_scrape_success"
 }
 
 @test "nixl_intel_gpu respects OUT_DIR via collect-all" {
