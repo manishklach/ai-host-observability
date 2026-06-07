@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
 
 permissions:
   contents: write
@@ -23,30 +23,15 @@ jobs:
 
       - name: Install release tools
         run: |
-          sudo apt-get install -y jq python3-yaml systemd shfmt shellcheck
+          sudo apt-get install -y shfmt shellcheck
 
-      - name: Lint (shellcheck scripts)
-        uses: koalaman/shellcheck-action@v1
-        with:
-          version: v0.10.0
-          severity: warning
-          check_together: true
-          scandir: ./scripts
+      - name: Run tests
+        run: make test
 
-      - name: Lint (shellcheck tests)
-        uses: koalaman/shellcheck-action@v1
-        with:
-          version: v0.10.0
-          severity: warning
-          check_together: true
-          scandir: ./tests
+      - name: Run lint
+        run: make lint
 
-      - name: Validate before packaging
-        run: |
-          make test
-          make lint
-
-      - name: Derive version
+      - name: Extract version
         id: version
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
@@ -57,32 +42,16 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           make install PREFIX="dist/ai-host-observability-${VERSION}"
 
-      - name: Archive release (tarball)
+      - name: Create release tarball
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          tar -C dist -czf "ai-host-observability-${VERSION}.tar.gz" "ai-host-observability-${VERSION}"
+          tar -czf "ai-host-observability-${VERSION}.tar.gz" -C dist .
           sha256sum "ai-host-observability-${VERSION}.tar.gz" > SHA256SUMS
-
-      - name: Install nfpm
-        run: |
-          NFPM_VERSION="2.46.3"
-          curl -sSL -o /tmp/nfpm.deb "https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_${NFPM_VERSION}_amd64.deb"
-          sudo dpkg -i /tmp/nfpm.deb
-
-      - name: Build DEB/RPM packages
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          nfpm package --config nfpm.yaml --packager deb --target "ai-host-observability-${VERSION}_amd64.deb"
-          nfpm package --config nfpm.yaml --packager rpm --target "ai-host-observability-${VERSION}-1.x86_64.rpm"
-          sha256sum "ai-host-observability-${VERSION}_amd64.deb" >> SHA256SUMS
-          sha256sum "ai-host-observability-${VERSION}-1.x86_64.rpm" >> SHA256SUMS
 
       - name: Publish GitHub release assets
         uses: softprops/action-gh-release@v2
         with:
           files: |
             ai-host-observability-${{ steps.version.outputs.version }}.tar.gz
-            ai-host-observability-${{ steps.version.outputs.version }}_amd64.deb
-            ai-host-observability-${{ steps.version.outputs.version }}-1.x86_64.rpm
             SHA256SUMS
+          generate_release_notes: true

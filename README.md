@@ -70,12 +70,11 @@ flowchart LR
 ### Quick Install From A Release Tarball
 
 ```bash
-VERSION=0.2.0
-curl -LO "https://github.com/manishklach/ai-host-observability/releases/download/v${VERSION}/ai-host-observability-${VERSION}.tar.gz"
-curl -LO "https://github.com/manishklach/ai-host-observability/releases/download/v${VERSION}/SHA256SUMS"
-sha256sum -c SHA256SUMS
-tar -xzf "ai-host-observability-${VERSION}.tar.gz"
-cd "ai-host-observability-${VERSION}"
+# Latest tagged release
+VERSION=v0.2.0
+curl -fsSL "https://github.com/manishklach/ai-host-observability/releases/download/${VERSION}/ai-host-observability-${VERSION#v}.tar.gz" \
+  | tar xz
+cd "ai-host-observability-${VERSION#v}"
 sudo make install
 sudo systemctl daemon-reload
 sudo systemctl enable --now ai-host-observability.timer
