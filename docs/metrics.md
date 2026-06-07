@@ -59,6 +59,16 @@ metric_relabel_configs:
 - Interpretation: wrapper-recorded exporter failure marker
 - Example alert: `ai_host_exporter_last_run_error == 1`
 
+### `ai_host_exporter_duration_seconds`
+
+- Type: `gauge`
+- Labels: `exporter`
+- Unit: seconds
+- Source: `scripts/collect-all.sh`
+- When absent: wrapper did not run the exporter
+- Interpretation: wall-clock runtime for each exporter invocation, including failure paths
+- Example alert: `ai_host_exporter_duration_seconds > 30`
+
 ## Host Memory Exporter
 
 ### `nixl_host_scrape_success`
@@ -105,7 +115,7 @@ metric_relabel_configs:
 - Unit: bytes
 - Source: `${PROC_ROOT}/meminfo`
 - When absent: meminfo missing
-- Interpretation: selected host free-memory components
+- Interpretation: selected host memory components including capacity and free-memory signals
 - Example alert: `nixl_host_meminfo_bytes{field="memavailable"} < 8e9`
 
 ### `nixl_host_uptime_seconds`
@@ -154,7 +164,7 @@ metric_relabel_configs:
 - Unit: events
 - Source: `${PROC_ROOT}/vmstat`
 - When absent: vmstat unavailable
-- Interpretation: reclaim and swap pressure
+- Interpretation: reclaim, major-fault, and swap pressure
 - Example alert: `rate(nixl_host_vmstat{field="pgscan_direct"}[5m]) > 100`
 
 ### `nixl_host_cgroup_memory_current_bytes`

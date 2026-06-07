@@ -70,7 +70,7 @@ emit_help "nixl_host_meminfo_bytes" gauge "Selected ${PROC_ROOT}/meminfo values 
 if [[ -r "${PROC_ROOT}/meminfo" ]]; then
   while read -r key value _unit; do
     case "$key" in
-      MemAvailable:|MemFree:|SwapFree:|Buffers:|Cached:)
+      MemTotal:|MemAvailable:|MemFree:|SwapFree:|Buffers:|Cached:)
         if is_integer "$value"; then
           emit_metric "nixl_host_meminfo_bytes" "$((value * 1024))" "field=$(tr '[:upper:]' '[:lower:]' <<<"${key%:}")"
         fi
@@ -98,7 +98,7 @@ emit_help "nixl_host_vmstat" counter "Selected memory-pressure counters from ${P
 if [[ -r "${PROC_ROOT}/vmstat" ]]; then
   while read -r key value; do
     case "$key" in
-      pgscan_kswapd|pgscan_direct|pgsteal_kswapd|pgsteal_direct|pswpin|pswpout)
+      pgscan_kswapd|pgscan_direct|pgsteal_kswapd|pgsteal_direct|pgmajfault|pswpin|pswpout)
         is_integer "$value" && emit_metric "nixl_host_vmstat" "$value" "field=${key}"
         ;;
     esac
