@@ -115,6 +115,28 @@ sudo systemctl status ai-host-observability.timer
 sudo systemctl status ai-host-observability.service
 ```
 
+### Container / Kubernetes
+
+For containerized deployments, the repo includes both a local `docker-compose` path and a Kubernetes DaemonSet path.
+
+Docker Compose:
+
+```bash
+cd deploy/docker
+docker compose up --build
+```
+
+This starts the collector with host `/proc` and `/sys` mounted read-only, writes `.prom` files into a shared volume, and points a bundled `node-exporter` instance at that textfile collector directory.
+
+Kubernetes:
+
+```bash
+kubectl apply -f deploy/kubernetes/rbac.yaml
+kubectl apply -f deploy/kubernetes/daemonset.yaml
+```
+
+The DaemonSet runs one collector pod per node in the `monitoring` namespace, mounts host `/proc`, `/sys`, and `/var/lib/node_exporter/textfile_collector`, and uses a liveness probe to catch stalled collection loops.
+
 ### Prometheus
 
 Prometheus scrapes `node_exporter`; this repo does not expose its own HTTP server. Import the alert rules from `prometheus/alerts.yml`.

@@ -1,0 +1,24 @@
+services:
+  ai-host-observability:
+    build: .
+    privileged: true
+    pid: host
+    volumes:
+      - /proc:/proc:ro
+      - /sys:/sys:ro
+      - /run/udev:/run/udev:ro
+      - textfile_collector:/textfile_collector
+    environment:
+      - OUT_DIR=/textfile_collector
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    volumes:
+      - textfile_collector:/textfile_collector:ro
+    command:
+      - --collector.textfile.directory=/textfile_collector
+    ports:
+      - "9100:9100"
+
+volumes:
+  textfile_collector:
