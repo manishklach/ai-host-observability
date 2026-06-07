@@ -20,7 +20,7 @@ jobs:
 
       - name: Install test tools
         run: |
-          sudo apt-get install -y jq python3-yaml systemd shfmt
+          sudo apt-get install -y jq python3-yaml shellcheck systemd shfmt
 
       - name: Full test suite
         run: make test
@@ -29,20 +29,10 @@ jobs:
         run: make lint
 
       - name: Lint (shellcheck scripts)
-        uses: koalaman/shellcheck-action@v1
-        with:
-          version: v0.10.0
-          severity: warning
-          check_together: true
-          scandir: ./scripts
+        run: shellcheck ${SHELLCHECK_OPTS} scripts/*.sh
 
       - name: Lint (shellcheck tests)
-        uses: koalaman/shellcheck-action@v1
-        with:
-          version: v0.10.0
-          severity: warning
-          check_together: true
-          scandir: ./tests
+        run: shellcheck ${SHELLCHECK_OPTS} tests/helpers.bash tests/*.bats
 
       - name: Validate Grafana JSON
         run: jq empty grafana/ai-host-overview.json
