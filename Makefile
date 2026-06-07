@@ -35,7 +35,7 @@ check-deps:
 	fi; \
 	exit $$missing
 
-test:
+test: lint
 	@if ! command -v bats >/dev/null 2>&1; then \
 		echo "bats is required for make test. Install bats, or run make lint and make smoke."; \
 		exit 1; \

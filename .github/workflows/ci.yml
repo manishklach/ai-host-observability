@@ -11,19 +11,17 @@ jobs:
       # Keep CI close to the operator install path: syntax, lint, tests, packaging surfaces.
       - uses: actions/checkout@v4
 
+      - name: Install bats-core
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y bats
+
       - name: Install test tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y bats shellcheck jq python3-yaml systemd
+          sudo apt-get install -y shellcheck jq python3-yaml systemd
 
-      - name: Bash syntax
-        run: find scripts tests -name '*.sh' -print0 | xargs -0 -n1 bash -n
-
-      - name: Shellcheck
-        run: find scripts tests -name '*.sh' -print0 | xargs -0 shellcheck
-
-      - name: Bats tests
-        run: make test-bats
+      - name: Full test suite
+        run: make test
 
       - name: Validate Grafana JSON
         run: jq empty grafana/ai-host-overview.json

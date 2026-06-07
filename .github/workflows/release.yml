@@ -14,10 +14,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install bats-core
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y bats
+
       - name: Install release tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y bats shellcheck jq python3-yaml systemd
+          sudo apt-get install -y shellcheck jq python3-yaml systemd
 
       - name: Validate before packaging
         run: |
@@ -64,4 +68,3 @@ jobs:
             ai-host-observability-${{ steps.version.outputs.version }}_amd64.deb
             ai-host-observability-${{ steps.version.outputs.version }}-1.x86_64.rpm
             SHA256SUMS
-

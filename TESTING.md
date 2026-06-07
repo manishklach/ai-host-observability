@@ -77,6 +77,15 @@ Run the bats test suite:
 make test-bats
 ```
 
+`make test-bats` is now a live target, and `make test` runs `make lint` plus the Bats suite.
+
+If `bats` is not installed locally, install it first:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y bats
+```
+
 ## Deployment Validation
 
 If using `node_exporter` textfile collection:
