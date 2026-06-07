@@ -1,5 +1,8 @@
 # AI Host Observability
 
+[![CI](https://github.com/manishklach/ai-host-observability/actions/workflows/ci.yml/badge.svg)](https://github.com/manishklach/ai-host-observability/actions/workflows/ci.yml)
+[![Grafana Dashboard](https://img.shields.io/badge/Grafana-dashboard-F46800?logo=grafana&logoColor=white)](grafana/ai-host-overview.json)
+
 Prometheus-friendly Linux host observability for AI and GPU infrastructure, built for the pressure signals that show up between the GPU, NIC, PCIe, VFIO, and the host kernel.
 
 AI and GPU servers often fail on the host side before the GPU looks unhealthy. Hidden pressure can build in memory reclaim, PSI, RDMA registration footprint, IRQ load, BAR1 usage, cgroup growth, or kernel log patterns while GPU HBM still looks fine.

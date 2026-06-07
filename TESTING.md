@@ -33,14 +33,14 @@ Using `Ubuntu-24.04` in WSL:
 Syntax-check all scripts:
 
 ```bash
-cd /mnt/c/Users/ManishKL/Documents/Playground/ai-host-observability
+cd /path/to/ai-host-observability
 find scripts -name '*.sh' -print0 | xargs -0 -n1 bash -n
 ```
 
 Run the full collector into a temporary output directory:
 
 ```bash
-cd /mnt/c/Users/ManishKL/Documents/Playground/ai-host-observability
+cd /path/to/ai-host-observability
 OUT_DIR=/tmp/ai-host-observability-prom bash scripts/collect-all.sh
 ls -1 /tmp/ai-host-observability-prom
 ```
