@@ -52,6 +52,8 @@ assert_exporter_out_dir() {
   assert_exporter_direct "nixl-host-mem-exporter.sh" 'nixl_host_fw_pages_sum '
   run assert_metric_present 'nixl_host_meminfo_bytes{field="memavailable"}' "${TEST_TMPDIR}/nixl-host-mem-exporter.sh.prom"
   [[ "${status}" -eq 0 ]]
+  run assert_metric_present 'nixl_hugepages_free{size="2048kB"}' "${TEST_TMPDIR}/nixl-host-mem-exporter.sh.prom"
+  [[ "${status}" -eq 0 ]]
 }
 
 @test "nixl_host_mem missing proc path emits wrapper failure metric" {

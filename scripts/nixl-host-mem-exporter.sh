@@ -68,7 +68,16 @@ emit_metric "nixl_host_fw_pages_sum" "$fw_total"
 emit_metric "nixl_host_fw_pages_devices" "$fw_devices"
 
 emit_help "nixl_host_meminfo_bytes" gauge "Selected ${PROC_ROOT}/meminfo values converted to bytes."
+emit_help "nixl_hugepages_total" gauge "Hugepage pool size by page size."
+emit_help "nixl_hugepages_free" gauge "Free hugepages by page size."
+emit_help "nixl_hugepages_rsvd" gauge "Reserved hugepages by page size."
+emit_help "nixl_hugepages_surp" gauge "Surplus hugepages by page size."
 if [[ -r "${PROC_ROOT}/meminfo" ]]; then
+  huge_size=""
+  huge_total=""
+  huge_free=""
+  huge_rsvd=""
+  huge_surp=""
   while read -r key value _unit; do
     case "$key" in
     MemTotal: | MemAvailable: | MemFree: | SwapFree: | Buffers: | Cached:)
@@ -76,8 +85,32 @@ if [[ -r "${PROC_ROOT}/meminfo" ]]; then
         emit_metric "nixl_host_meminfo_bytes" "$((value * 1024))" "field=$(tr '[:upper:]' '[:lower:]' <<<"${key%:}")"
       fi
       ;;
+    Hugepagesize:)
+      if is_integer "$value"; then
+        huge_size="${value}kB"
+      fi
+      ;;
+    HugePages_Total:)
+      is_integer "$value" && huge_total="${value}"
+      ;;
+    HugePages_Free:)
+      is_integer "$value" && huge_free="${value}"
+      ;;
+    HugePages_Rsvd:)
+      is_integer "$value" && huge_rsvd="${value}"
+      ;;
+    HugePages_Surp:)
+      is_integer "$value" && huge_surp="${value}"
+      ;;
     esac
   done <"${PROC_ROOT}/meminfo"
+
+  if [[ -n "${huge_size}" ]]; then
+    is_integer "${huge_total}" && emit_metric "nixl_hugepages_total" "${huge_total}" "size=${huge_size}"
+    is_integer "${huge_free}" && emit_metric "nixl_hugepages_free" "${huge_free}" "size=${huge_size}"
+    is_integer "${huge_rsvd}" && emit_metric "nixl_hugepages_rsvd" "${huge_rsvd}" "size=${huge_size}"
+    is_integer "${huge_surp}" && emit_metric "nixl_hugepages_surp" "${huge_surp}" "size=${huge_size}"
+  fi
 fi
 
 emit_help "nixl_host_uptime_seconds" gauge "Host uptime in seconds from /proc/uptime."
@@ -96,14 +129,41 @@ emit_help "nixl_host_memory_psi_total" counter "Memory PSI total stall time in m
 emit_psi_metrics "${PROC_ROOT}/pressure/memory" "nixl_host_memory_psi_avg" "nixl_host_memory_psi_total"
 
 emit_help "nixl_host_vmstat" counter "Selected memory-pressure counters from ${PROC_ROOT}/vmstat."
+emit_help "nixl_thp_fault_alloc_total" counter "Transparent hugepage allocation successes."
+emit_help "nixl_thp_fault_fallback_total" counter "Transparent hugepage fault fallbacks to small pages."
+emit_help "nixl_thp_collapse_alloc_total" counter "Transparent hugepage collapse allocation successes."
+emit_help "nixl_thp_split_page_total" counter "Transparent hugepage splits."
+emit_help "nixl_thp_deferred_split_page_total" counter "Deferred transparent hugepage splits."
 if [[ -r "${PROC_ROOT}/vmstat" ]]; then
   while read -r key value; do
     case "$key" in
     pgscan_kswapd | pgscan_direct | pgsteal_kswapd | pgsteal_direct | pgmajfault | pswpin | pswpout)
       is_integer "$value" && emit_metric "nixl_host_vmstat" "$value" "field=${key}"
       ;;
+    thp_fault_alloc)
+      is_integer "$value" && emit_metric "nixl_thp_fault_alloc_total" "$value"
+      ;;
+    thp_fault_fallback)
+      is_integer "$value" && emit_metric "nixl_thp_fault_fallback_total" "$value"
+      ;;
+    thp_collapse_alloc)
+      is_integer "$value" && emit_metric "nixl_thp_collapse_alloc_total" "$value"
+      ;;
+    thp_split_page)
+      is_integer "$value" && emit_metric "nixl_thp_split_page_total" "$value"
+      ;;
+    thp_deferred_split_page)
+      is_integer "$value" && emit_metric "nixl_thp_deferred_split_page_total" "$value"
+      ;;
     esac
   done <"${PROC_ROOT}/vmstat"
+fi
+
+emit_help "nixl_thp_enabled_info" gauge "Active transparent hugepage policy mode."
+if [[ -r "${SYS_ROOT}/kernel/mm/transparent_hugepage/enabled" ]]; then
+  enabled_line="$(safe_read_file "${SYS_ROOT}/kernel/mm/transparent_hugepage/enabled" || true)"
+  active_mode="$(sed -nE 's/.*\[([^]]+)\].*/\1/p' <<<"${enabled_line}")"
+  [[ -n "${active_mode}" ]] && emit_metric "nixl_thp_enabled_info" 1 "mode=${active_mode}"
 fi
 
 detect_cgroup_version() {

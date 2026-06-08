@@ -140,3 +140,23 @@ groups:
           summary: NVLink errors are increasing.
           description: NVLink replay, recovery, or CRC errors are accumulating over time, which is often a pre-failure fabric signal even if GPU memory and utilization still look normal. Check XID events, thermals, seating, and recent topology changes.
           runbook_url: docs/runbooks/NVLinkErrorsIncreasing.md
+
+      - alert: HugepagesExhausted
+        expr: nixl_hugepages_free{size="2048kB"} == 0 and nixl_hugepages_total{size="2048kB"} > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: 2MB hugepage pool is exhausted.
+          description: The 2MB hugepage pool is fully allocated while the host still expects that page size to be available. New RDMA registrations, pinned buffers, or GPU BAR mappings may fall back to small pages and show unstable performance.
+          runbook_url: docs/runbooks/HugepagesExhausted.md
+
+      - alert: THPFallbackRateHigh
+        expr: rate(nixl_thp_fault_fallback_total[5m]) / (rate(nixl_thp_fault_alloc_total[5m]) + rate(nixl_thp_fault_fallback_total[5m]) + 1) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Transparent hugepage fallback rate is high.
+          description: More than twenty percent of transparent hugepage allocation attempts are falling back to small pages. This can create unstable memory performance and higher CPU overhead for registration-heavy GPU and RDMA workloads.
+          runbook_url: docs/runbooks/THPFallbackRateHigh.md

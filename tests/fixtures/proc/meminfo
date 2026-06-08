@@ -8,3 +8,8 @@ Active:          2048000 kB
 Inactive:        1024000 kB
 SwapTotal:       8192000 kB
 SwapFree:        4096000 kB
+HugePages_Total: 64
+HugePages_Free: 16
+HugePages_Rsvd: 4
+HugePages_Surp: 2
+Hugepagesize:    2048 kB
