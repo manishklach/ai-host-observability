@@ -118,6 +118,44 @@ metric_relabel_configs:
 - Interpretation: selected host memory components including capacity and free-memory signals
 - Example alert: `nixl_host_meminfo_bytes{field="memavailable"} < 8e9`
 
+### `nixl_hugepages_total`
+
+- Type: `gauge`
+- Labels: `size`
+- Unit: pages
+- Source: `${PROC_ROOT}/meminfo`
+- When absent: hugepage fields unavailable
+- Interpretation: total configured hugepage pool by page size
+- Example alert: `nixl_hugepages_total{size="2048kB"} > 0`
+
+### `nixl_hugepages_free`
+
+- Type: `gauge`
+- Labels: `size`
+- Unit: pages
+- Source: `${PROC_ROOT}/meminfo`
+- When absent: hugepage fields unavailable
+- Interpretation: free hugepages remaining by page size
+- Example alert: `nixl_hugepages_free{size="2048kB"} == 0`
+
+### `nixl_hugepages_rsvd`
+
+- Type: `gauge`
+- Labels: `size`
+- Unit: pages
+- Source: `${PROC_ROOT}/meminfo`
+- When absent: hugepage fields unavailable
+- Interpretation: reserved hugepages not yet faulted in
+
+### `nixl_hugepages_surp`
+
+- Type: `gauge`
+- Labels: `size`
+- Unit: pages
+- Source: `${PROC_ROOT}/meminfo`
+- When absent: hugepage fields unavailable
+- Interpretation: surplus hugepages above the persistent pool
+
 ### `nixl_host_uptime_seconds`
 
 - Type: `gauge`
@@ -166,6 +204,63 @@ metric_relabel_configs:
 - When absent: vmstat unavailable
 - Interpretation: reclaim, major-fault, and swap pressure
 - Example alert: `rate(nixl_host_vmstat{field="pgscan_direct"}[5m]) > 100`
+
+### `nixl_thp_fault_alloc_total`
+
+- Type: `counter`
+- Labels: none
+- Unit: events
+- Source: `${PROC_ROOT}/vmstat`
+- When absent: THP vmstat unavailable
+- Interpretation: successful THP fault allocations
+- Example alert: `rate(nixl_thp_fault_alloc_total[5m])`
+
+### `nixl_thp_fault_fallback_total`
+
+- Type: `counter`
+- Labels: none
+- Unit: events
+- Source: `${PROC_ROOT}/vmstat`
+- When absent: THP vmstat unavailable
+- Interpretation: THP fault fallbacks to small pages
+- Example alert: `rate(nixl_thp_fault_fallback_total[5m])`
+
+### `nixl_thp_collapse_alloc_total`
+
+- Type: `counter`
+- Labels: none
+- Unit: events
+- Source: `${PROC_ROOT}/vmstat`
+- When absent: THP vmstat unavailable
+- Interpretation: THP collapse allocation successes
+
+### `nixl_thp_split_page_total`
+
+- Type: `counter`
+- Labels: none
+- Unit: events
+- Source: `${PROC_ROOT}/vmstat`
+- When absent: THP vmstat unavailable
+- Interpretation: THP splits back to base pages
+
+### `nixl_thp_deferred_split_page_total`
+
+- Type: `counter`
+- Labels: none
+- Unit: events
+- Source: `${PROC_ROOT}/vmstat`
+- When absent: THP vmstat unavailable
+- Interpretation: deferred THP split activity
+
+### `nixl_thp_enabled_info`
+
+- Type: `gauge`
+- Labels: `mode`
+- Unit: constant `1`
+- Source: `${SYS_ROOT}/kernel/mm/transparent_hugepage/enabled`
+- When absent: THP mode file unavailable
+- Interpretation: active THP policy mode
+- Example alert: `nixl_thp_enabled_info{mode="never"} == 1`
 
 ### `nixl_host_cgroup_memory_current_bytes`
 
@@ -385,7 +480,386 @@ metric_relabel_configs:
 - Unit: matching log lines
 - Source: `${JOURNALCTL} -k -b --no-pager` or `dmesg`
 - When absent: kernel logs unavailable
-- Interpretation: boot-window pattern counts for OOM, AER, VFIO, IOMMU, RDMA, GPU driver events
+- Interpretation: boot-window pattern counts for OOM, AER, VFIO, IOMMU, RDMA, GPU XID, NVLink, watchdog, lockup, and panic events
+
+## Reliability: MCE / EDAC / RAS Exporter
+
+### `nixl_mce_scrape_success`
+
+- Type: `gauge`
+- Labels: `source`
+- Unit: boolean `0/1`
+- Source: `scripts/mce-ras-exporter.sh`
+- When absent: exporter failed before emitting output
+- Interpretation: whether the named reliability source yielded counters
+
+### `nixl_edac_correctable_errors_total`
+
+- Type: `counter`
+- Labels: `controller`, `channel`
+- Unit: errors
+- Source: `${SYS_ROOT}/devices/system/edac/mc/*`
+- When absent: EDAC memory-controller counters unavailable
+- Interpretation: correctable memory errors by controller and DIMM/channel
+- Example alert: `increase(nixl_edac_correctable_errors_total[1h]) > 10`
+
+### `nixl_edac_uncorrectable_errors_total`
+
+- Type: `counter`
+- Labels: `controller`, `channel`
+- Unit: errors
+- Source: `${SYS_ROOT}/devices/system/edac/mc/*`
+- When absent: EDAC memory-controller counters unavailable
+- Interpretation: uncorrectable memory errors by controller and DIMM/channel
+- Example alert: `increase(nixl_edac_uncorrectable_errors_total[10m]) > 0`
+
+### `nixl_edac_ce_noinfo_count`
+
+- Type: `counter`
+- Labels: `controller`
+- Unit: errors
+- Source: `${SYS_ROOT}/devices/system/edac/mc/*/ce_noinfo_count`
+- When absent: counter unavailable
+- Interpretation: correctable errors without channel attribution
+
+### `nixl_edac_ue_noinfo_count`
+
+- Type: `counter`
+- Labels: `controller`
+- Unit: errors
+- Source: `${SYS_ROOT}/devices/system/edac/mc/*/ue_noinfo_count`
+- When absent: counter unavailable
+- Interpretation: uncorrectable errors without channel attribution
+
+### `nixl_edac_cpu_ce_count`
+
+- Type: `counter`
+- Labels: `cpu`, `bank`
+- Unit: errors
+- Source: `${SYS_ROOT}/devices/system/edac/cpu/*`
+- When absent: CPU EDAC counters unavailable
+- Interpretation: per-bank CPU correctable error counts
+
+### `nixl_edac_cpu_ue_count`
+
+- Type: `counter`
+- Labels: `cpu`, `bank`
+- Unit: errors
+- Source: `${SYS_ROOT}/devices/system/edac/cpu/*`
+- When absent: CPU EDAC counters unavailable
+- Interpretation: per-bank CPU uncorrectable error counts
+
+### `nixl_rasdaemon_ce_total`
+
+- Type: `counter`
+- Labels: `dimm`
+- Unit: errors
+- Source: `${RAS_MC_CTL} --errors`
+- When absent: `rasdaemon` or `ras-mc-ctl` unavailable
+- Interpretation: rasdaemon-reported correctable DIMM errors
+
+### `nixl_rasdaemon_ue_total`
+
+- Type: `counter`
+- Labels: `dimm`
+- Unit: errors
+- Source: `${RAS_MC_CTL} --errors`
+- When absent: `rasdaemon` or `ras-mc-ctl` unavailable
+- Interpretation: rasdaemon-reported uncorrectable DIMM errors
+
+### `nixl_mcelog_events_total`
+
+- Type: `counter`
+- Labels: `bank`, `mcg_status`
+- Unit: events
+- Source: `${MCELOG_PATH}`
+- When absent: mcelog device unavailable
+- Interpretation: machine-check log events by bank and global status class
+
+## Reliability: CPU Thermal Exporter
+
+### `nixl_thermal_scrape_success`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `scripts/cpu-thermal-exporter.sh`
+- When absent: exporter failed before emitting output
+- Interpretation: exporter completed with at least one thermal or frequency source
+
+### `nixl_thermal_zone_temp_celsius`
+
+- Type: `gauge`
+- Labels: `zone`, `type`
+- Unit: Celsius
+- Source: `${SYS_ROOT}/class/thermal/thermal_zone*`
+- When absent: thermal zones unavailable
+- Interpretation: current thermal-zone temperature
+
+### `nixl_thermal_zone_trip_point_celsius`
+
+- Type: `gauge`
+- Labels: `zone`, `trip`, `type`
+- Unit: Celsius
+- Source: `${SYS_ROOT}/class/thermal/thermal_zone*/trip_point_*`
+- When absent: trip points unavailable
+- Interpretation: thermal trip thresholds
+
+### `nixl_cpu_thermal_throttle_total`
+
+- Type: `counter`
+- Labels: `cpu`, `scope`
+- Unit: throttle events
+- Source: `${SYS_ROOT}/devices/system/cpu/cpu*/thermal_throttle`
+- When absent: thermal throttle counters unavailable
+- Interpretation: core or package throttling events
+- Example alert: `rate(nixl_cpu_thermal_throttle_total[5m]) > 0`
+
+### `nixl_cpu_freq_current_khz`
+
+- Type: `gauge`
+- Labels: `package`, `stat`
+- Unit: kHz
+- Source: `${SYS_ROOT}/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq`
+- When absent: cpufreq unavailable
+- Interpretation: current package frequency distribution
+- Example alert: `nixl_cpu_freq_current_khz{stat="mean"} / nixl_cpu_freq_max_khz < 0.85`
+
+### `nixl_cpu_freq_max_khz`
+
+- Type: `gauge`
+- Labels: `package`
+- Unit: kHz
+- Source: `${SYS_ROOT}/devices/system/cpu/cpu*/cpufreq/cpuinfo_max_freq`
+- When absent: cpufreq unavailable
+- Interpretation: rated package maximum frequency
+
+### `nixl_cpu_freq_min_khz`
+
+- Type: `gauge`
+- Labels: `package`
+- Unit: kHz
+- Source: `${SYS_ROOT}/devices/system/cpu/cpu*/cpufreq/cpuinfo_min_freq`
+- When absent: cpufreq unavailable
+- Interpretation: rated package minimum frequency
+
+### `nixl_cpu_freq_governor_info`
+
+- Type: `gauge`
+- Labels: `package`, `governor`
+- Unit: constant `1`
+- Source: `${SYS_ROOT}/devices/system/cpu/cpu*/cpufreq/scaling_governor`
+- When absent: cpufreq unavailable
+- Interpretation: active CPU frequency governor by package
+
+## Reliability: NVLink Exporter
+
+### `nixl_nvlink_scrape_success`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `scripts/nvlink-exporter.sh`
+- When absent: exporter failed before emitting output
+- Interpretation: whether NVLink status and counters were available
+
+### `nixl_nvlink_state`
+
+- Type: `gauge`
+- Labels: `index`, `link`, `state`
+- Unit: boolean `0/1`
+- Source: `${NVIDIA_SMI} nvlink --status`
+- When absent: no NVLink-capable NVIDIA GPU or command unavailable
+- Interpretation: active/inactive NVLink state
+- Example alert: `nixl_nvlink_state == 0`
+
+### `nixl_nvlink_replay_errors_total`
+
+- Type: `counter`
+- Labels: `index`, `link`
+- Unit: errors
+- Source: `${NVIDIA_SMI} nvlink --errorcounters`
+- When absent: NVLink error counters unavailable
+- Interpretation: replay errors per NVLink
+
+### `nixl_nvlink_recovery_errors_total`
+
+- Type: `counter`
+- Labels: `index`, `link`
+- Unit: errors
+- Source: `${NVIDIA_SMI} nvlink --errorcounters`
+- When absent: NVLink error counters unavailable
+- Interpretation: recovery errors per NVLink
+
+### `nixl_nvlink_crc_flit_errors_total`
+
+- Type: `counter`
+- Labels: `index`, `link`
+- Unit: errors
+- Source: `${NVIDIA_SMI} nvlink --errorcounters`
+- When absent: NVLink error counters unavailable
+- Interpretation: flit CRC errors per NVLink
+
+### `nixl_nvlink_crc_data_errors_total`
+
+- Type: `counter`
+- Labels: `index`, `link`
+- Unit: errors
+- Source: `${NVIDIA_SMI} nvlink --errorcounters`
+- When absent: NVLink error counters unavailable
+- Interpretation: data CRC errors per NVLink
+
+### `nixl_nvlink_error_total`
+
+- Type: `counter`
+- Labels: `index`, `type`
+- Unit: errors
+- Source: aggregated from NVLink link counters
+- When absent: NVLink error counters unavailable
+- Interpretation: per-GPU aggregate NVLink error totals by class
+- Example alert: `rate(nixl_nvlink_error_total[5m]) > 0`
+
+## Reliability: Watchdog Exporter
+
+### `nixl_watchdog_scrape_success`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `scripts/watchdog-exporter.sh`
+- When absent: exporter failed before emitting output
+- Interpretation: exporter completed with at least one watchdog-related sysctl
+
+### `nixl_kernel_watchdog_enabled`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `${PROC_ROOT}/sys/kernel/watchdog`
+- When absent: sysctl unavailable
+- Interpretation: whether the kernel watchdog is enabled
+
+### `nixl_kernel_watchdog_thresh_seconds`
+
+- Type: `gauge`
+- Labels: none
+- Unit: seconds
+- Source: `${PROC_ROOT}/sys/kernel/watchdog_thresh`
+- When absent: sysctl unavailable
+- Interpretation: soft/hard lockup threshold
+
+### `nixl_kernel_hung_task_timeout_seconds`
+
+- Type: `gauge`
+- Labels: none
+- Unit: seconds
+- Source: `${PROC_ROOT}/sys/kernel/hung_task_timeout_secs`
+- When absent: sysctl unavailable
+- Interpretation: blocked-task warning threshold
+
+### `nixl_kernel_nmi_watchdog_enabled`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `${PROC_ROOT}/sys/kernel/nmi_watchdog`
+- When absent: sysctl unavailable
+- Interpretation: whether the NMI watchdog is enabled
+
+### `nixl_kernel_softlockup_panic`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `${PROC_ROOT}/sys/kernel/softlockup_panic`
+- When absent: sysctl unavailable
+- Interpretation: whether soft lockups trigger panic
+
+### `nixl_kernel_panic_timeout_seconds`
+
+- Type: `gauge`
+- Labels: none
+- Unit: seconds
+- Source: `${PROC_ROOT}/sys/kernel/panic`
+- When absent: sysctl unavailable
+- Interpretation: reboot delay after panic
+
+## Reliability: Timesync Exporter
+
+### `nixl_timesync_scrape_success`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `scripts/timesync-exporter.sh`
+- When absent: exporter failed before emitting output
+- Interpretation: timesync state was collected from chrony or timedatectl
+
+### `nixl_timesync_synchronized`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `${TIMEDATECTL}` or `${CHRONYC}`
+- When absent: neither timesync source is available
+- Interpretation: whether the system clock is synchronised
+- Example alert: `nixl_timesync_synchronized == 0`
+
+### `nixl_timesync_offset_seconds`
+
+- Type: `gauge`
+- Labels: none
+- Unit: seconds
+- Source: `${CHRONYC} tracking`
+- When absent: chronyc unavailable
+- Interpretation: signed current clock offset
+- Example alert: `abs(nixl_timesync_offset_seconds) > 0.01`
+
+### `nixl_timesync_rms_offset_seconds`
+
+- Type: `gauge`
+- Labels: none
+- Unit: seconds
+- Source: `${CHRONYC} tracking`
+- When absent: chronyc unavailable
+- Interpretation: RMS offset from the time source
+
+### `nixl_timesync_freq_error_ppm`
+
+- Type: `gauge`
+- Labels: none
+- Unit: ppm
+- Source: `${CHRONYC} tracking`
+- When absent: chronyc unavailable
+- Interpretation: clock frequency correction magnitude
+
+### `nixl_timesync_stratum`
+
+- Type: `gauge`
+- Labels: none
+- Unit: stratum level
+- Source: `${CHRONYC} tracking`
+- When absent: chronyc unavailable
+- Interpretation: NTP stratum quality indicator
+- Example alert: `nixl_timesync_stratum > 3`
+
+### `nixl_timesync_reference_id_info`
+
+- Type: `gauge`
+- Labels: `ref_id`, `ref_name`
+- Unit: constant `1`
+- Source: `${CHRONYC} tracking`
+- When absent: chronyc unavailable
+- Interpretation: current time-source identity
+
+### `nixl_timesync_last_update_seconds`
+
+- Type: `gauge`
+- Labels: none
+- Unit: seconds
+- Source: `${CHRONYC} tracking`
+- When absent: chronyc unavailable
+- Interpretation: seconds since the last chrony update
 
 ## GPU Exporter
 
@@ -488,6 +962,90 @@ metric_relabel_configs:
 - Unit: bytes
 - Source: `${NVIDIA_SMI}`
 - When absent: BAR1 metrics unavailable
+
+### `nixl_gpu_throttle_reason`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`, `reason`
+- Unit: boolean `0/1`
+- Source: `${NVIDIA_SMI} --query-gpu=clocks_event_reasons.*`
+- When absent: throttle-reason query unsupported
+- Interpretation: active or inactive throttle reason flags
+- Example alert: `nixl_gpu_throttle_reason{reason="hw_slowdown"} == 1`
+
+### `nixl_gpu_pstate`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`, `pstate`
+- Unit: constant `1`
+- Source: `${NVIDIA_SMI} --query-gpu=pstate`
+- When absent: pstate query unsupported
+- Interpretation: current NVIDIA performance state
+- Example alert: `nixl_gpu_pstate{pstate!="P0"} == 1`
+
+### `nixl_gpu_power_limit_watts`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: watts
+- Source: `${NVIDIA_SMI} --query-gpu=power.limit`
+- When absent: query unsupported
+- Interpretation: configured software power limit
+
+### `nixl_gpu_power_enforced_limit_watts`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: watts
+- Source: `${NVIDIA_SMI} --query-gpu=enforced.power.limit`
+- When absent: query unsupported
+- Interpretation: enforced power limit currently in effect
+
+### `nixl_gpu_clock_sm_mhz`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: MHz
+- Source: `${NVIDIA_SMI} --query-gpu=clocks.sm`
+- When absent: query unsupported
+- Interpretation: current SM clock
+- Example alert: `nixl_gpu_clock_sm_mhz / nixl_gpu_clock_max_sm_mhz < 0.9`
+
+### `nixl_gpu_clock_mem_mhz`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: MHz
+- Source: `${NVIDIA_SMI} --query-gpu=clocks.mem`
+- When absent: query unsupported
+- Interpretation: current memory clock
+
+### `nixl_gpu_clock_max_sm_mhz`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: MHz
+- Source: `${NVIDIA_SMI} --query-gpu=clocks.max.sm`
+- When absent: query unsupported
+- Interpretation: rated maximum SM clock
+
+### `nixl_gpu_clock_max_mem_mhz`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: MHz
+- Source: `${NVIDIA_SMI} --query-gpu=clocks.max.mem`
+- When absent: query unsupported
+- Interpretation: rated maximum memory clock
+
+### `nixl_gpu_fan_speed_percent`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: percent
+- Source: `${NVIDIA_SMI} --query-gpu=fan.speed`
+- When absent: fan telemetry unavailable or N/A
+- Interpretation: current fan duty cycle
 
 ### `nixl_amd_gpu_scrape_success`
 

@@ -32,16 +32,21 @@ flowchart LR
 - memory and CPU PSI from `/proc/pressure/*`
 - reclaim and swap counters from `/proc/vmstat`
 - `mlx5` `fw_pages_total` from debugfs
+- hardware memory errors from EDAC, rasdaemon, and `mcelog`
 - cgroup v2 memory current, events, and pressure
 - RDMA / InfiniBand counters
 - selected `ethtool -S` counters
 - softirq and selected IRQ counters
+- CPU thermal throttling and package frequency stability
 - NUMA memory and hit/miss counters
-- kernel log patterns for OOM, PCIe/AER, VFIO, IOMMU, RDMA, and GPU driver issues
+- kernel log patterns for OOM, PCIe/AER, VFIO, IOMMU, RDMA, GPU XID, watchdog, soft lockup, and RCU stall events
 - NVIDIA GPU telemetry through `nvidia-smi`
+- GPU throttle reasons, P-state, and NVLink fabric health
 - disk/filesystem pressure
 - generic `/proc/net` network stack counters
 - per-process locked memory
+- hugepage inventory and THP fallback behavior
+- NTP and chrony synchronisation and offset health
 - PCIe/VFIO/IOMMU visibility
 
 ## Quick Triage Workflow

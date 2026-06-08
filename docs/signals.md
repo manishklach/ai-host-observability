@@ -72,3 +72,63 @@
 - `nixl_vfio_group_devices`
 - `nixl_iommu_group_total`
 - `nixl_module_loaded{module="vfio_pci"}`
+
+## Reliability and Hardware Fault Signals
+
+### Memory Errors (EDAC / RAS)
+
+- `nixl_edac_correctable_errors_total`
+- `nixl_edac_uncorrectable_errors_total`
+- `nixl_edac_ce_noinfo_count`
+- `nixl_edac_cpu_ce_count`
+- `nixl_rasdaemon_ce_total`
+- `nixl_mcelog_events_total`
+
+### CPU Thermal and Frequency
+
+- `nixl_thermal_zone_temp_celsius`
+- `nixl_cpu_thermal_throttle_total`
+- `nixl_cpu_freq_current_khz`
+- `nixl_cpu_freq_max_khz`
+- `nixl_cpu_freq_governor_info`
+
+### GPU XID and Throttle
+
+- `nixl_kernel_log_pattern_total{pattern="gpu_xid"}`
+- `nixl_kernel_log_pattern_total{pattern="gpu_reset"}`
+- `nixl_gpu_throttle_reason`
+- `nixl_gpu_pstate`
+- `nixl_gpu_clock_sm_mhz`
+- `nixl_gpu_power_enforced_limit_watts`
+
+### NVLink Fabric
+
+- `nixl_nvlink_state`
+- `nixl_nvlink_replay_errors_total`
+- `nixl_nvlink_recovery_errors_total`
+- `nixl_nvlink_crc_flit_errors_total`
+- `nixl_nvlink_error_total`
+
+### Hugepages and THP
+
+- `nixl_hugepages_total`
+- `nixl_hugepages_free`
+- `nixl_thp_fault_alloc_total`
+- `nixl_thp_fault_fallback_total`
+- `nixl_thp_enabled_info`
+
+### Watchdog and Lockup
+
+- `nixl_kernel_log_pattern_total{pattern="soft_lockup"}`
+- `nixl_kernel_log_pattern_total{pattern="hung_task"}`
+- `nixl_kernel_log_pattern_total{pattern="rcu_stall"}`
+- `nixl_kernel_watchdog_enabled`
+- `nixl_kernel_hung_task_timeout_seconds`
+
+### Clock Sync
+
+- `nixl_timesync_synchronized`
+- `nixl_timesync_offset_seconds`
+- `nixl_timesync_rms_offset_seconds`
+- `nixl_timesync_freq_error_ppm`
+- `nixl_timesync_stratum`
