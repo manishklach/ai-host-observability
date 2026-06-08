@@ -13,4 +13,8 @@ cat <<'EOF'
 [    9.0] NVSwitch error detected in fabric manager
 [   10.0] GPU Exception triggered on engine
 [   11.0] resetting GPU after XID event
+[   12.0] watchdog: BUG: soft lockup - CPU#3 stuck for 22s
+[   13.0] INFO: task kworker/0:1 blocked for more than 120 seconds.
+[   14.0] rcu_sched self-detected stall on CPU
+[   15.0] Kernel panic - not syncing: Fatal exception
 EOF

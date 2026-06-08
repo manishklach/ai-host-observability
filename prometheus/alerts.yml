@@ -160,3 +160,33 @@ groups:
           summary: Transparent hugepage fallback rate is high.
           description: More than twenty percent of transparent hugepage allocation attempts are falling back to small pages. This can create unstable memory performance and higher CPU overhead for registration-heavy GPU and RDMA workloads.
           runbook_url: docs/runbooks/THPFallbackRateHigh.md
+
+      - alert: KernelSoftLockupDetected
+        expr: rate(nixl_kernel_log_pattern_total{pattern="soft_lockup"}[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: Kernel soft lockup detected.
+          description: The kernel log contains soft lockup events, which means one or more CPUs spent excessive time stuck without scheduling normally. The host may already be partially unresponsive or heading toward a panic path.
+          runbook_url: docs/runbooks/KernelSoftLockupDetected.md
+
+      - alert: KernelHungTaskDetected
+        expr: rate(nixl_kernel_log_pattern_total{pattern="hung_task"}[5m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: Kernel hung task detected.
+          description: The kernel log is reporting blocked or hung tasks. This often precedes broader stalls in storage, filesystems, or driver paths and should be investigated before the host becomes unusable.
+          runbook_url: docs/runbooks/KernelHungTaskDetected.md
+
+      - alert: RCUStallDetected
+        expr: rate(nixl_kernel_log_pattern_total{pattern="rcu_stall"}[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: RCU stall detected.
+          description: The kernel has logged an RCU stall, which points to severe scheduling starvation, runaway interrupt load, or a CPU that is no longer making forward progress.
+          runbook_url: docs/runbooks/RCUStallDetected.md

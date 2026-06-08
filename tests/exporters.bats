@@ -230,6 +230,22 @@ assert_exporter_out_dir() {
   assert_exporter_out_dir "nixl_nvlink"
 }
 
+@test "nixl_watchdog direct fixture run emits Prometheus metrics" {
+  assert_exporter_direct "watchdog-exporter.sh" 'nixl_kernel_watchdog_enabled '
+  run assert_metric_present 'nixl_kernel_hung_task_timeout_seconds ' "${TEST_TMPDIR}/watchdog-exporter.sh.prom"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "nixl_watchdog missing proc path emits degraded scrape success" {
+  run env PROC_ROOT="/nonexistent" bash "${ROOT_DIR}/scripts/watchdog-exporter.sh"
+  [[ "${status}" -eq 0 ]]
+  [[ "${output}" == *'nixl_watchdog_scrape_success 0 '* ]]
+}
+
+@test "nixl_watchdog respects OUT_DIR via collect-all" {
+  assert_exporter_out_dir "nixl_watchdog"
+}
+
 @test "nixl_amd_gpu direct fixture run emits Prometheus metrics" {
   assert_exporter_direct "collect-amd-gpu.sh" 'nixl_gpu_memory_used_bytes{vendor="amd",index="0",uuid="AMD-000"}'
 }

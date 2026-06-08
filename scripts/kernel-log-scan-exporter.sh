@@ -47,6 +47,14 @@ patterns=(
   "nvswitch.*error|NVSwitch.*error"
   "Hardware Exception|GPU Exception"
   "GPU-.*reset|resetting GPU|XID.*reset"
+  "soft lockup"
+  "hard lockup|NMI watchdog"
+  "hung_task|task.*blocked|task.*hung"
+  "RCU.*stall|rcu_sched self-detected stall"
+  "CPU stuck|CPU.*not responding"
+  "Kernel panic"
+  "general protection fault|kernel BUG at|Oops:"
+  "stack overflow"
 )
 
 names=(
@@ -66,6 +74,14 @@ names=(
   "nvsw_error"
   "hw_exception"
   "gpu_reset"
+  "soft_lockup"
+  "hard_lockup"
+  "hung_task"
+  "rcu_stall"
+  "cpu_stuck"
+  "kernel_panic"
+  "kernel_oops"
+  "stack_overflow"
 )
 
 for idx in "${!patterns[@]}"; do

@@ -31,6 +31,7 @@ declare -a DEFAULT_EXPORTERS=(
   "nixl_mce"
   "nixl_thermal"
   "nixl_nvlink"
+  "nixl_watchdog"
 )
 
 declare -A EXPORTER_SCRIPTS=(
@@ -49,6 +50,7 @@ declare -A EXPORTER_SCRIPTS=(
   ["nixl_mce"]="mce-ras-exporter.sh"
   ["nixl_thermal"]="cpu-thermal-exporter.sh"
   ["nixl_nvlink"]="nvlink-exporter.sh"
+  ["nixl_watchdog"]="watchdog-exporter.sh"
 )
 
 cleanup() {
