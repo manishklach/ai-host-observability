@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.3.0 (2026-06-08)
+
+### Reliability Monitoring
+- **Memory errors and RAS**: Added `mce-ras-exporter.sh` for EDAC memory controller counters, CPU-bank EDAC counters, rasdaemon DIMM errors, and `mcelog` event aggregation
+- **CPU thermal and frequency stability**: Added `cpu-thermal-exporter.sh` for thermal zones, trip points, throttle counters, package frequency min/max/mean, and governor labeling
+- **GPU fabric and failure signals**: Added `nvlink-exporter.sh`, expanded kernel log pattern coverage for GPU XID / NVLink / NVSwitch / reset events, and extended NVIDIA GPU telemetry with throttle reasons, P-state, power limits, clocks, and fan speed
+- **Hugepage and THP visibility**: Extended the host memory exporter with hugepage pool inventory, THP fault/fallback/split counters, and active THP mode
+- **Watchdog and hang detection**: Added `watchdog-exporter.sh` plus kernel log pattern coverage for soft lockups, hung tasks, RCU stalls, panics, oopses, and stack overflows
+- **Clock synchronisation**: Added `timesync-exporter.sh` for chrony / timedatectl sync state, offset, RMS offset, frequency error, stratum, and reference source labels
+
+### Alerts and Runbooks
+- Added reliability alerts for EDAC memory errors, CPU thermal throttling, low CPU frequency, NVLink down/errors, hugepage exhaustion, THP fallback rate, soft lockups, hung tasks, RCU stalls, clock synchronisation drift, GPU hardware slowdown, GPU power-cap throttling, non-P0 state, and low GPU clocks
+- Added matching runbook stubs under `docs/runbooks/` for all new reliability alerts
+
+### Tests and Fixtures
+- Added fixture-backed Bats coverage for all new reliability exporters
+- Added reliability fixture data for EDAC, thermal zones, CPU cpufreq, watchdog sysctls, chrony / timedatectl, and enhanced `nvidia-smi` / `journalctl` stubs
+
+### Documentation
+- Added a new reliability section to `docs/signals.md`
+- Expanded `docs/metrics.md` with contract entries for all new reliability metrics
+- Updated the README monitoring summary to include hardware fault, thermal, NVLink, hugepage, watchdog, and time-sync coverage
+
 ## v0.2.0 (2026-06-06)
 
 ### Collector Improvements
@@ -28,4 +51,3 @@
 ## v0.1.0
 
 - Initial public release
-

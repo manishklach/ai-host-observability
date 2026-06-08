@@ -79,7 +79,7 @@ flowchart LR
 
 ```bash
 # Latest tagged release
-VERSION=v0.2.0
+VERSION=v0.3.0
 curl -fsSL "https://github.com/manishklach/ai-host-observability/releases/download/${VERSION}/ai-host-observability-${VERSION#v}.tar.gz" \
   | tar xz
 cd "ai-host-observability-${VERSION#v}"
