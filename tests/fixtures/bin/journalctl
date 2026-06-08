@@ -8,4 +8,9 @@ cat <<'EOF'
 [    4.0] vfio-pci 0000:00:00.0: enabling device
 [    5.0] iommu: DMA fault detected
 [    6.0] NVRM: Xid 32
+[    7.0] NVRM: Xid 79, GPU has fallen off the bus
+[    8.0] nvlink fatal error on link 0
+[    9.0] NVSwitch error detected in fabric manager
+[   10.0] GPU Exception triggered on engine
+[   11.0] resetting GPU after XID event
 EOF

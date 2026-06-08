@@ -37,6 +37,16 @@ patterns=(
   "iommu|dma map|dma fault"
   "mlx5|infiniband|rdma"
   "xid|nvrm"
+  "NVRM: Xid"
+  "NVRM: Xid.*79"
+  "NVRM: Xid.*74"
+  "NVRM: Xid.*48"
+  "NVRM: Xid.*45"
+  "nvlink.*error|NVLink.*error"
+  "nvlink.*fatal|NVLink.*fatal"
+  "nvswitch.*error|NVSwitch.*error"
+  "Hardware Exception|GPU Exception"
+  "GPU-.*reset|resetting GPU|XID.*reset"
 )
 
 names=(
@@ -46,6 +56,16 @@ names=(
   "iommu_dma"
   "rdma_mlx5"
   "gpu_driver"
+  "gpu_xid"
+  "gpu_xid_79"
+  "gpu_xid_74"
+  "gpu_xid_48"
+  "gpu_xid_45"
+  "nvlink_error"
+  "nvlink_fatal"
+  "nvsw_error"
+  "hw_exception"
+  "gpu_reset"
 )
 
 for idx in "${!patterns[@]}"; do

@@ -1,6 +1,28 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ "${1:-}" == "nvlink" && "${2:-}" == "--status" ]]; then
+  cat <<'EOF'
+GPU 0:
+  Link 0: Active
+  Link 1: Inactive
+EOF
+  exit 0
+fi
+
+if [[ "${1:-}" == "nvlink" && "${2:-}" == "--errorcounters" ]]; then
+  cat <<'EOF'
+GPU 0:
+  Link 0: Replay 2, Recovery 1, CRC FLIT 0, CRC DATA 0
+  Link 1: Replay 0, Recovery 0, CRC FLIT 3, CRC DATA 1
+EOF
+  exit 0
+fi
+
+if [[ "${1:-}" == "nvlink" ]]; then
+  exit 0
+fi
+
 cat <<'EOF'
 0, GPU-123, Test GPU "A", 0000:01:00.0, 42, 1024, 8192, 70, 215.5, 5, 16, 0, 512, 1024
 EOF

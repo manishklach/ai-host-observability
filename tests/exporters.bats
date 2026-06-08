@@ -100,6 +100,8 @@ assert_exporter_out_dir() {
 
 @test "nixl_kernel_log direct fixture run emits Prometheus metrics" {
   assert_exporter_direct "kernel-log-scan-exporter.sh" 'nixl_kernel_log_pattern_total{pattern="oom"}'
+  run assert_metric_present 'nixl_kernel_log_pattern_total{pattern="gpu_xid_79"}' "${TEST_TMPDIR}/kernel-log-scan-exporter.sh.prom"
+  [[ "${status}" -eq 0 ]]
 }
 
 @test "nixl_kernel_log missing proc path emits wrapper failure metric" {
@@ -208,6 +210,22 @@ assert_exporter_out_dir() {
 
 @test "nixl_thermal respects OUT_DIR via collect-all" {
   assert_exporter_out_dir "nixl_thermal"
+}
+
+@test "nixl_nvlink direct fixture run emits Prometheus metrics" {
+  assert_exporter_direct "nvlink-exporter.sh" 'nixl_nvlink_state{index="0",link="0",state="active"}'
+  run assert_metric_present 'nixl_nvlink_error_total{index="0",type="crc_flit"}' "${TEST_TMPDIR}/nvlink-exporter.sh.prom"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "nixl_nvlink missing proc path emits degraded scrape success" {
+  run env PROC_ROOT="/nonexistent" bash "${ROOT_DIR}/scripts/nvlink-exporter.sh"
+  [[ "${status}" -eq 0 ]]
+  [[ "${output}" == *'nixl_nvlink_scrape_success 0 '* ]]
+}
+
+@test "nixl_nvlink respects OUT_DIR via collect-all" {
+  assert_exporter_out_dir "nixl_nvlink"
 }
 
 @test "nixl_amd_gpu direct fixture run emits Prometheus metrics" {

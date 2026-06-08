@@ -30,6 +30,7 @@ declare -a DEFAULT_EXPORTERS=(
   "nixl_pcie_vfio"
   "nixl_mce"
   "nixl_thermal"
+  "nixl_nvlink"
 )
 
 declare -A EXPORTER_SCRIPTS=(
@@ -47,6 +48,7 @@ declare -A EXPORTER_SCRIPTS=(
   ["nixl_pcie_vfio"]="pcie-vfio-exporter.sh"
   ["nixl_mce"]="mce-ras-exporter.sh"
   ["nixl_thermal"]="cpu-thermal-exporter.sh"
+  ["nixl_nvlink"]="nvlink-exporter.sh"
 )
 
 cleanup() {

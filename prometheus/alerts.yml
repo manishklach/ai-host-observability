@@ -120,3 +120,23 @@ groups:
           summary: CPU packages are sustaining frequencies below rated maximum.
           description: The mean package frequency has remained below 85 percent of the rated maximum for five minutes. Check cooling, BIOS power limits, cgroup CPU limits, and whether thermal throttling or package power caps are suppressing performance.
           runbook_url: docs/runbooks/CPUFreqBelowMax.md
+
+      - alert: NVLinkDown
+        expr: nixl_nvlink_state == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: An NVLink is down.
+          description: One or more NVLink links are not active. Multi-GPU collectives can hang or lose throughput sharply when a link is unavailable, especially on topologies that expect a full fabric.
+          runbook_url: docs/runbooks/NVLinkDown.md
+
+      - alert: NVLinkErrorsIncreasing
+        expr: rate(nixl_nvlink_error_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: NVLink errors are increasing.
+          description: NVLink replay, recovery, or CRC errors are accumulating over time, which is often a pre-failure fabric signal even if GPU memory and utilization still look normal. Check XID events, thermals, seating, and recent topology changes.
+          runbook_url: docs/runbooks/NVLinkErrorsIncreasing.md
