@@ -116,6 +116,8 @@ assert_exporter_out_dir() {
 
 @test "nixl_gpu direct fixture run emits Prometheus metrics" {
   assert_exporter_direct "gpu-exporter.sh" 'nixl_gpu_memory_used_bytes{vendor="nvidia",index="0",uuid="GPU-123"}'
+  run assert_metric_present 'nixl_gpu_throttle_reason{index="0",uuid="GPU-123",reason="sw_power_cap"}' "${TEST_TMPDIR}/gpu-exporter.sh.prom"
+  [[ "${status}" -eq 0 ]]
 }
 
 @test "nixl_gpu missing proc path emits wrapper failure metric" {

@@ -220,3 +220,43 @@ groups:
           summary: Clock stratum is higher than expected.
           description: The host is several hops away from a reliable time source. That usually indicates degraded NTP quality and increases the risk of drift over longer training jobs.
           runbook_url: docs/runbooks/ClockStratumHigh.md
+
+      - alert: GPUHWSlowdown
+        expr: nixl_gpu_throttle_reason{reason="hw_slowdown"} == 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: GPU hardware slowdown is active.
+          description: The GPU is reporting a hardware slowdown reason, which usually means a severe thermal or power-protection path is active. Performance will be materially degraded and the host should be treated as unreliable for steady training throughput.
+          runbook_url: docs/runbooks/GPUHWSlowdown.md
+
+      - alert: GPUPowerCapThrottling
+        expr: nixl_gpu_throttle_reason{reason="sw_power_cap"} == 1
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: GPU is throttling on software power cap.
+          description: The GPU is being limited by a configured software power cap. If this is unexpected, review the enforced power limit and whether the node was intentionally derated.
+          runbook_url: docs/runbooks/GPUPowerCapThrottling.md
+
+      - alert: GPUNotAtP0
+        expr: nixl_gpu_pstate{pstate!="P0"} == 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: GPU is not in maximum-performance P-state.
+          description: The GPU has remained outside P0 for five minutes. During active training windows this often means the device is throttled, under-driven, or otherwise not reaching its intended performance state.
+          runbook_url: docs/runbooks/GPUNotAtP0.md
+
+      - alert: GPUClocksBelowMax
+        expr: nixl_gpu_clock_sm_mhz / nixl_gpu_clock_max_sm_mhz < 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: GPU SM clocks are materially below maximum.
+          description: The GPU SM clock has stayed more than ten percent below the rated maximum. Check throttle reasons, enforced power limits, thermals, and whether application clocks were intentionally constrained.
+          runbook_url: docs/runbooks/GPUClocksBelowMax.md

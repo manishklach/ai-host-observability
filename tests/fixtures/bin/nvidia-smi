@@ -23,6 +23,33 @@ if [[ "${1:-}" == "nvlink" ]]; then
   exit 0
 fi
 
+case "${1:-}" in
+--query-gpu=index,uuid,name,pci.bus_id,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw,pcie.link.gen.current,pcie.link.width.current,ecc.errors.volatile.total,bar1_memory.used,bar1_memory.total)
+  cat <<'EOF'
+0, GPU-123, Test GPU "A", 0000:01:00.0, 42, 1024, 8192, 70, 215.5, 5, 16, 0, 512, 1024
+EOF
+  exit 0
+  ;;
+--query-gpu=index,uuid,clocks_event_reasons.gpu_idle,clocks_event_reasons.applications_clocks_setting,clocks_event_reasons.sw_power_cap,clocks_event_reasons.hw_slowdown,clocks_event_reasons.hw_thermal_slowdown,clocks_event_reasons.hw_power_brake_slowdown,clocks_event_reasons.sync_boost,clocks_event_reasons.sw_thermal_slowdown,clocks_event_reasons.display_clocks_setting)
+  cat <<'EOF'
+0, GPU-123, Not Active, Not Active, Active, Not Active, Not Active, Not Active, Not Active, Not Active, Not Active
+EOF
+  exit 0
+  ;;
+--query-gpu=index,uuid,pstate)
+  cat <<'EOF'
+0, GPU-123, P2
+EOF
+  exit 0
+  ;;
+--query-gpu=index,uuid,power.limit,enforced.power.limit,clocks.sm,clocks.mem,clocks.max.sm,clocks.max.mem,fan.speed)
+  cat <<'EOF'
+0, GPU-123, 300.0, 285.0, 1410, 1593, 1770, 2000, 55 %
+EOF
+  exit 0
+  ;;
+esac
+
 cat <<'EOF'
 0, GPU-123, Test GPU "A", 0000:01:00.0, 42, 1024, 8192, 70, 215.5, 5, 16, 0, 512, 1024
 EOF
