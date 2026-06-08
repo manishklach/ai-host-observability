@@ -194,6 +194,22 @@ assert_exporter_out_dir() {
   assert_exporter_out_dir "nixl_mce"
 }
 
+@test "nixl_thermal direct fixture run emits Prometheus metrics" {
+  assert_exporter_direct "cpu-thermal-exporter.sh" 'nixl_thermal_zone_temp_celsius{zone="thermal_zone0",type="x86_pkg_temp"}'
+  run assert_metric_present 'nixl_cpu_freq_current_khz{package="package0",stat="mean"}' "${TEST_TMPDIR}/cpu-thermal-exporter.sh.prom"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "nixl_thermal missing proc path emits degraded scrape success" {
+  run env SYS_ROOT="/nonexistent" bash "${ROOT_DIR}/scripts/cpu-thermal-exporter.sh"
+  [[ "${status}" -eq 0 ]]
+  [[ "${output}" == *'nixl_thermal_scrape_success 0 '* ]]
+}
+
+@test "nixl_thermal respects OUT_DIR via collect-all" {
+  assert_exporter_out_dir "nixl_thermal"
+}
+
 @test "nixl_amd_gpu direct fixture run emits Prometheus metrics" {
   assert_exporter_direct "collect-amd-gpu.sh" 'nixl_gpu_memory_used_bytes{vendor="amd",index="0",uuid="AMD-000"}'
 }

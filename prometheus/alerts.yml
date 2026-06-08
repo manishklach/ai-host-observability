@@ -100,3 +100,23 @@ groups:
           summary: Uncorrectable EDAC memory errors were detected.
           description: An uncorrectable EDAC memory error has occurred within the last ten minutes. This is a data-integrity event, not just a pressure signal, and should be handled as potential corruption risk for running training or inference workloads.
           runbook_url: docs/runbooks/EDACUncorrectableErrors.md
+
+      - alert: CPUThermalThrottling
+        expr: rate(nixl_cpu_thermal_throttle_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: CPU thermal throttling is occurring.
+          description: CPU core or package throttle counters are increasing, which means the host is thermal-throttling under load. Training jobs can show non-deterministic throughput cliffs or tail latency when the package repeatedly hits thermal limits.
+          runbook_url: docs/runbooks/CPUThermalThrottling.md
+
+      - alert: CPUFreqBelowMax
+        expr: nixl_cpu_freq_current_khz{stat="mean"} / nixl_cpu_freq_max_khz < 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: CPU packages are sustaining frequencies below rated maximum.
+          description: The mean package frequency has remained below 85 percent of the rated maximum for five minutes. Check cooling, BIOS power limits, cgroup CPU limits, and whether thermal throttling or package power caps are suppressing performance.
+          runbook_url: docs/runbooks/CPUFreqBelowMax.md
