@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "tracking" ]]; then
+  cat <<'EOF'
+Reference ID    : C0A80101 (time-a.example.net)
+Stratum         : 2
+Ref time (UTC)  : Sun Jun 08 07:00:00 2026
+System time     : 0.000512345 seconds fast of NTP time
+Last offset     : +0.000123456 seconds
+RMS offset      : 0.000654321 seconds
+Frequency       : 12.345 ppm fast
+Update interval : 64.0 seconds
+EOF
+  exit 0
+fi
+
+exit 1

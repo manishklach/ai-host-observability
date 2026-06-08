@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "show" && "${2:-}" == "--property=NTPSynchronized" && "${3:-}" == "--value" ]]; then
+  echo "yes"
+  exit 0
+fi
+
+exit 1

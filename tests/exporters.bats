@@ -246,6 +246,22 @@ assert_exporter_out_dir() {
   assert_exporter_out_dir "nixl_watchdog"
 }
 
+@test "nixl_timesync direct fixture run emits Prometheus metrics" {
+  assert_exporter_direct "timesync-exporter.sh" 'nixl_timesync_synchronized '
+  run assert_metric_present 'nixl_timesync_reference_id_info{ref_id="C0A80101",ref_name="time-a.example.net"}' "${TEST_TMPDIR}/timesync-exporter.sh.prom"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "nixl_timesync missing proc path emits degraded scrape success" {
+  run env PROC_ROOT="/nonexistent" bash "${ROOT_DIR}/scripts/timesync-exporter.sh"
+  [[ "${status}" -eq 0 ]]
+  [[ "${output}" == *'nixl_timesync_scrape_success 0 '* ]]
+}
+
+@test "nixl_timesync respects OUT_DIR via collect-all" {
+  assert_exporter_out_dir "nixl_timesync"
+}
+
 @test "nixl_amd_gpu direct fixture run emits Prometheus metrics" {
   assert_exporter_direct "collect-amd-gpu.sh" 'nixl_gpu_memory_used_bytes{vendor="amd",index="0",uuid="AMD-000"}'
 }

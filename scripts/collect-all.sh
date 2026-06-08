@@ -32,6 +32,7 @@ declare -a DEFAULT_EXPORTERS=(
   "nixl_thermal"
   "nixl_nvlink"
   "nixl_watchdog"
+  "nixl_timesync"
 )
 
 declare -A EXPORTER_SCRIPTS=(
@@ -51,6 +52,7 @@ declare -A EXPORTER_SCRIPTS=(
   ["nixl_thermal"]="cpu-thermal-exporter.sh"
   ["nixl_nvlink"]="nvlink-exporter.sh"
   ["nixl_watchdog"]="watchdog-exporter.sh"
+  ["nixl_timesync"]="timesync-exporter.sh"
 )
 
 cleanup() {

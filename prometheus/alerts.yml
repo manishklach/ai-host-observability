@@ -190,3 +190,33 @@ groups:
           summary: RCU stall detected.
           description: The kernel has logged an RCU stall, which points to severe scheduling starvation, runaway interrupt load, or a CPU that is no longer making forward progress.
           runbook_url: docs/runbooks/RCUStallDetected.md
+
+      - alert: ClockNotSynchronised
+        expr: nixl_timesync_synchronized == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: System clock is not synchronised.
+          description: The host is not reporting an NTP-synchronised clock. Multi-node checkpoints, timeout correlation, and transport diagnostics may all become less trustworthy when timestamps drift.
+          runbook_url: docs/runbooks/ClockNotSynchronised.md
+
+      - alert: ClockOffsetHigh
+        expr: abs(nixl_timesync_offset_seconds) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Clock offset is above 10ms.
+          description: The measured clock offset has stayed above 10 milliseconds for five minutes. On distributed GPU jobs this can create misleading timeout behaviour and poor cross-node log correlation.
+          runbook_url: docs/runbooks/ClockOffsetHigh.md
+
+      - alert: ClockStratumHigh
+        expr: nixl_timesync_stratum > 3
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Clock stratum is higher than expected.
+          description: The host is several hops away from a reliable time source. That usually indicates degraded NTP quality and increases the risk of drift over longer training jobs.
+          runbook_url: docs/runbooks/ClockStratumHigh.md
