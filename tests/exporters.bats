@@ -170,6 +170,30 @@ assert_exporter_out_dir() {
   assert_exporter_out_dir "nixl_pcie_vfio"
 }
 
+@test "nixl_mce direct fixture run emits Prometheus metrics" {
+  assert_exporter_direct "mce-ras-exporter.sh" 'nixl_edac_correctable_errors_total{controller="mc0",channel="dimm0"}'
+  run assert_metric_present 'nixl_rasdaemon_ce_total{dimm="DIMM_A1"}' "${TEST_TMPDIR}/mce-ras-exporter.sh.prom"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "nixl_mce missing proc path emits degraded scrape success" {
+  local output_file="${TEST_TMPDIR}/mce-ras-exporter.sh-missing.prom"
+
+  while IFS= read -r assignment; do
+    local name="${assignment%%=*}"
+    local value="${assignment#*=}"
+    export "${name}=${value}"
+  done < <(common_env)
+
+  run env SYS_ROOT="/nonexistent" MCELOG_PATH="/nonexistent" bash "${ROOT_DIR}/scripts/mce-ras-exporter.sh"
+  [[ "${status}" -eq 0 ]]
+  [[ "${output}" == *'nixl_mce_scrape_success{source="edac"} 0 '* ]]
+}
+
+@test "nixl_mce respects OUT_DIR via collect-all" {
+  assert_exporter_out_dir "nixl_mce"
+}
+
 @test "nixl_amd_gpu direct fixture run emits Prometheus metrics" {
   assert_exporter_direct "collect-amd-gpu.sh" 'nixl_gpu_memory_used_bytes{vendor="amd",index="0",uuid="AMD-000"}'
 }

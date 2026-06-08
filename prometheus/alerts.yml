@@ -80,3 +80,23 @@ groups:
           summary: An ai-host-observability exporter is not completing successfully.
           description: The wrapper has reported one or more exporters in a failed state for at least three minutes. Check the exporter name, recent deployment or permission changes, missing host paths or vendor tools, and whether the textfile collector directory is writable.
           runbook_url: docs/runbooks/ExporterNotRunning.md
+
+      - alert: EDACCorrectableErrors
+        expr: increase(nixl_edac_correctable_errors_total[1h]) > 10
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: Correctable EDAC memory errors are accumulating.
+          description: More than ten correctable EDAC errors were recorded during the last hour for at least one memory controller channel. This usually means DIMM degradation is in progress and should be treated as an early hardware warning before it turns into an uncorrectable error or a host crash.
+          runbook_url: docs/runbooks/EDACCorrectableErrors.md
+
+      - alert: EDACUncorrectableErrors
+        expr: increase(nixl_edac_uncorrectable_errors_total[10m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: Uncorrectable EDAC memory errors were detected.
+          description: An uncorrectable EDAC memory error has occurred within the last ten minutes. This is a data-integrity event, not just a pressure signal, and should be handled as potential corruption risk for running training or inference workloads.
+          runbook_url: docs/runbooks/EDACUncorrectableErrors.md

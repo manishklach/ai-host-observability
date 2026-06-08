@@ -28,6 +28,7 @@ declare -a DEFAULT_EXPORTERS=(
   "nixl_network_stack"
   "nixl_process_memory"
   "nixl_pcie_vfio"
+  "nixl_mce"
 )
 
 declare -A EXPORTER_SCRIPTS=(
@@ -43,6 +44,7 @@ declare -A EXPORTER_SCRIPTS=(
   ["nixl_network_stack"]="network-stack-exporter.sh"
   ["nixl_process_memory"]="process-memory-exporter.sh"
   ["nixl_pcie_vfio"]="pcie-vfio-exporter.sh"
+  ["nixl_mce"]="mce-ras-exporter.sh"
 )
 
 cleanup() {

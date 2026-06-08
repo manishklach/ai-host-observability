@@ -1,0 +1,6 @@
+CPU 0: Machine Check Exception: 5 Bank 8: b200000000070f0f
+MCG status: RIPV MCIP EIPV
+CPU 1: Machine Check Exception: 5 Bank 8: b200000000070f0f
+MCG status: RIPV MCIP EIPV
+CPU 2: Machine Check Exception: 5 Bank 10: b200000000070f0f
+MCG status: UC EN RIPV
