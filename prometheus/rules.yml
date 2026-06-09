@@ -1,0 +1,8 @@
+groups:
+  - name: ai-host-observability-anomaly
+    rules:
+      - record: nixl:anomaly:zscore_high
+        expr: nixl_baseline_zscore > 3
+
+      - record: nixl:anomaly:p99_breach
+        expr: nixl_baseline_current > nixl_baseline_p99

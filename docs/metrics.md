@@ -1236,6 +1236,79 @@ metric_relabel_configs:
 - When absent: IOMMU groups unavailable
 - Interpretation: overall IOMMU group count
 
+## Statistical Baseline Exporter
+
+### `nixl_baseline_scrape_success`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `scripts/anomaly-baseline-exporter.sh`
+
+### `nixl_baseline_mean`
+
+- Type: `gauge`
+- Labels: `metric_id`
+- Unit: same as source metric
+- Source: `${OUT_DIR}/.baseline/*.window`
+- Interpretation: rolling mean for a host-local anomaly baseline metric
+
+### `nixl_baseline_stddev`
+
+- Type: `gauge`
+- Labels: `metric_id`
+- Unit: same as source metric
+- Source: `${OUT_DIR}/.baseline/*.window`
+- Interpretation: rolling population standard deviation for the same baseline
+
+### `nixl_baseline_p50`
+
+- Type: `gauge`
+- Labels: `metric_id`
+- Unit: same as source metric
+- Source: `${OUT_DIR}/.baseline/*.window`
+- Interpretation: rolling median for the selected baseline metric
+
+### `nixl_baseline_p95`
+
+- Type: `gauge`
+- Labels: `metric_id`
+- Unit: same as source metric
+- Source: `${OUT_DIR}/.baseline/*.window`
+- Interpretation: rolling p95 for the selected baseline metric
+
+### `nixl_baseline_p99`
+
+- Type: `gauge`
+- Labels: `metric_id`
+- Unit: same as source metric
+- Source: `${OUT_DIR}/.baseline/*.window`
+- Interpretation: rolling p99 for the selected baseline metric
+
+### `nixl_baseline_current`
+
+- Type: `gauge`
+- Labels: `metric_id`
+- Unit: same as source metric
+- Source: current `.prom` outputs in `${OUT_DIR}`
+- Interpretation: current sample inserted into the rolling baseline window
+
+### `nixl_baseline_zscore`
+
+- Type: `gauge`
+- Labels: `metric_id`
+- Unit: standard deviations
+- Source: derived from current value, mean, and stddev
+- Interpretation: how abnormal the current reading is versus recent local history
+
+### `nixl_baseline_window_size`
+
+- Type: `gauge`
+- Labels: `metric_id`
+- Unit: samples
+- Source: `${OUT_DIR}/.baseline/*.window`
+- Interpretation: number of retained samples used to compute the rolling baseline
+
 ### `nixl_module_loaded`
 
 - Type: `gauge`

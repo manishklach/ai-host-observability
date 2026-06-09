@@ -260,3 +260,31 @@ groups:
           summary: GPU SM clocks are materially below maximum.
           description: The GPU SM clock has stayed more than ten percent below the rated maximum. Check throttle reasons, enforced power limits, thermals, and whether application clocks were intentionally constrained.
           runbook_url: docs/runbooks/GPUClocksBelowMax.md
+
+      - alert: MetricZScoreHigh
+        expr: nixl_baseline_zscore{metric_id=~"psi_mem.*|fw_pages.*|ib_rcv.*"} > 3
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: A baseline-tracked metric is far above its recent norm.
+          description: >-
+            The local rolling baseline exporter has flagged {{ $labels.metric_id }}
+            at more than three standard deviations above its recent 24 hour baseline.
+            Investigate the paired raw metric, the host activity that changed it,
+            and whether this is a new steady state or a transient incident precursor.
+          runbook_url: docs/runbooks/MetricZScoreHigh.md
+
+      - alert: MetricExceedsP99
+        expr: nixl_baseline_current > nixl_baseline_p99 and nixl_baseline_window_size > 60
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: A baseline-tracked metric is above its recent p99.
+          description: >-
+            {{ $labels.metric_id }} is sitting above its local rolling p99 baseline
+            with more than an hour of baseline history available. Treat this as an
+            early warning that the node has moved out of its normal operating
+            envelope even if user-visible failures have not started yet.
+          runbook_url: docs/runbooks/MetricExceedsP99.md
