@@ -28,7 +28,7 @@ while (($# > 0)); do
     }
     OUT_DIR="$1"
     ;;
-  --help|-h)
+  --help | -h)
     usage
     exit 0
     ;;
