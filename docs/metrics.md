@@ -1398,6 +1398,95 @@ metric_relabel_configs:
 - Source: `${OUT_DIR}/.heartbeat/stall.state`
 - Interpretation: duration of the currently suspected stalled state
 
+## Network Flow Exporter
+
+### `nixl_netflow_scrape_success`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `scripts/net-flow-exporter.sh`
+
+### `nixl_netflow_tcp_established_total`
+
+- Type: `gauge`
+- Labels: `local_port_class`
+- Unit: count
+- Source: `ss --tcp --info state established`
+- Interpretation: established TCP socket count grouped into NCCL, RDMA, SSH, and other classes
+
+### `nixl_netflow_tcp_close_wait_total`
+
+- Type: `gauge`
+- Labels: none
+- Unit: count
+- Source: `ss --tcp --info state close-wait`
+- Interpretation: lingering sockets that may indicate application-side close handling issues
+
+### `nixl_netflow_tcp_time_wait_total`
+
+- Type: `gauge`
+- Labels: none
+- Unit: count
+- Source: `ss --tcp --info state time-wait`
+- Interpretation: socket churn level from recently closed TCP connections
+
+### `nixl_netflow_udp_established_total`
+
+- Type: `gauge`
+- Labels: none
+- Unit: count
+- Source: `ss --udp state established`
+- Interpretation: established UDP socket count
+
+### `nixl_netflow_tcp_retrans_total`
+
+- Type: `counter`
+- Labels: `local_port_class`
+- Unit: retransmit proxy count
+- Source: parsed from `ss --tcp --info state established`
+- Interpretation: retransmit activity grouped by socket class
+
+### `nixl_netflow_iface_rx_utilization_ratio`
+
+- Type: `gauge`
+- Labels: `iface`
+- Unit: ratio `0..1+`
+- Source: `/proc/net/dev` byte deltas and `${SYS_ROOT}/class/net/<iface>/speed`
+- Interpretation: receive-side interface utilization relative to line rate
+
+### `nixl_netflow_iface_tx_utilization_ratio`
+
+- Type: `gauge`
+- Labels: `iface`
+- Unit: ratio `0..1+`
+- Source: `/proc/net/dev` byte deltas and `${SYS_ROOT}/class/net/<iface>/speed`
+- Interpretation: transmit-side interface utilization relative to line rate
+
+### `nixl_netflow_nccl_connections_detected`
+
+- Type: `gauge`
+- Labels: none
+- Unit: count
+- Source: high-port TCP heuristic
+- Interpretation: likely NCCL-style TCP connections seen on the host
+
+### `nixl_netflow_nccl_remote_hosts_total`
+
+- Type: `gauge`
+- Labels: none
+- Unit: count
+- Source: high-port TCP heuristic
+- Interpretation: distinct remote /24 peers participating in likely NCCL traffic
+
+### `nixl_netstat_ext`
+
+- Type: `counter`
+- Labels: `field`
+- Unit: counter
+- Source: `${PROC_ROOT}/net/netstat`
+- Interpretation: selected extended TCP stack counters not surfaced in the generic SNMP view
+
 ### `nixl_module_loaded`
 
 - Type: `gauge`

@@ -34,6 +34,7 @@ declare -a DEFAULT_EXPORTERS=(
   "nixl_watchdog"
   "nixl_timesync"
   "nixl_job"
+  "nixl_netflow"
   "nixl_baseline"
 )
 
@@ -56,6 +57,7 @@ declare -A EXPORTER_SCRIPTS=(
   ["nixl_watchdog"]="watchdog-exporter.sh"
   ["nixl_timesync"]="timesync-exporter.sh"
   ["nixl_job"]="job-heartbeat-exporter.sh"
+  ["nixl_netflow"]="net-flow-exporter.sh"
   ["nixl_baseline"]="anomaly-baseline-exporter.sh"
 )
 

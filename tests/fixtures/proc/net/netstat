@@ -1,0 +1,2 @@
+TcpExt: SyncookiesSent SyncookiesRecv SyncookiesFailed TCPSynRetrans TCPFastRetrans TCPSlowStartRetrans TCPTIMEOUTS TCPLostRetransmit TCPSackRetrans TCPSpuriousRTOs TCPRetransFail TCPForwardRetrans TCPFromZeroWindowAdv TCPToZeroWindowAdv TCPWantZeroWindowAdv TCPSchedulerFailed
+TcpExt: 0 0 0 14 3 2 9 4 6 1 0 0 0 0 0 0

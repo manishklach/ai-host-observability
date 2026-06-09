@@ -328,3 +328,29 @@ groups:
             crashed, the process may be orphaned, or GPU context cleanup may be
             incomplete.
           runbook_url: docs/runbooks/TrainingProcessDied.md
+
+      - alert: InterfaceNearSaturation
+        expr: nixl_netflow_iface_rx_utilization_ratio > 0.85 or nixl_netflow_iface_tx_utilization_ratio > 0.85
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: A host interface is close to saturation.
+          description: >-
+            One or more interfaces have sustained RX or TX utilization above
+            eighty-five percent of the reported line rate. Collective traffic,
+            checkpoint transfers, or storage replication may be throttling jobs.
+          runbook_url: docs/runbooks/InterfaceNearSaturation.md
+
+      - alert: TCPRetransmitRateHigh
+        expr: rate(nixl_netflow_tcp_retrans_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: TCP retransmit pressure is high.
+          description: >-
+            The network flow exporter is seeing a high retransmit rate, which
+            usually points to congestion, packet loss, or path instability between
+            training nodes.
+          runbook_url: docs/runbooks/TCPRetransmitRateHigh.md
