@@ -444,3 +444,16 @@ groups:
             ninety-five percent of total device memory. The next large allocation
             may fail even if utilization still looks acceptable.
           runbook_url: docs/runbooks/GPUMemoryOversubscribed.md
+
+      - alert: PerfEventParanoidTooHigh
+        expr: nixl_perf_event_paranoid > 1
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: Perf and profiling access is too restricted.
+          description: >-
+            `perf_event_paranoid` is set above 1, which commonly blocks non-root
+            profiling, perf sampling, and parts of the eBPF and tracing workflow
+            operators rely on during GPU and NCCL incident response.
+          runbook_url: docs/runbooks/PerfEventParanoidTooHigh.md

@@ -5,6 +5,9 @@ pgsteal_kswapd 333
 pgsteal_direct 44
 pswpin 5
 pswpout 6
+pgalloc_normal 900
+pgfree 870
+slabs_scanned 45
 thp_fault_alloc 200
 thp_fault_fallback 20
 thp_collapse_alloc 15

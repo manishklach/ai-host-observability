@@ -1721,6 +1721,79 @@ metric_relabel_configs:
 - Source: `nvidia-smi --query-gpu`
 - Interpretation: rows pending remap that indicate degraded device health
 
+## Trace Event Exporter
+
+### `nixl_trace_scrape_success`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `scripts/trace-event-exporter.sh`
+
+### `nixl_trace_events_enabled_total`
+
+- Type: `gauge`
+- Labels: `subsystem`
+- Unit: count
+- Source: `${TRACING_ROOT}/events/*/*/enable`
+- Interpretation: number of already-enabled tracepoints per subsystem
+
+### `nixl_trace_function_hit_total`
+
+- Type: `counter`
+- Labels: `function`
+- Unit: hits
+- Source: `${TRACING_ROOT}/trace_stat/function0`
+- Interpretation: top function hit counters when trace stats are already populated
+
+### `nixl_trace_mm_page_alloc_total`
+
+- Type: `counter`
+- Labels: none
+- Unit: allocations
+- Source: `${PROC_ROOT}/vmstat`
+- Interpretation: page allocation proxy for memory tracing dashboards
+
+### `nixl_trace_mm_page_free_total`
+
+- Type: `counter`
+- Labels: none
+- Unit: frees
+- Source: `${PROC_ROOT}/vmstat`
+- Interpretation: page free proxy for memory tracing dashboards
+
+### `nixl_trace_kmem_cache_alloc_total`
+
+- Type: `counter`
+- Labels: none
+- Unit: scans
+- Source: `${PROC_ROOT}/vmstat`
+- Interpretation: slab allocator pressure proxy for trace-aligned views
+
+### `nixl_perf_event_paranoid`
+
+- Type: `gauge`
+- Labels: none
+- Unit: raw sysctl value
+- Source: `${PROC_ROOT}/sys/kernel/perf_event_paranoid`
+- Interpretation: whether non-root perf and profiling workflows are likely to work
+
+### `nixl_perf_event_max_sample_rate`
+
+- Type: `gauge`
+- Labels: none
+- Unit: samples per second
+- Source: `${PROC_ROOT}/sys/kernel/perf_event_max_sample_rate`
+- Interpretation: upper bound for perf sample rate
+
+### `nixl_perf_event_mlock_kb`
+
+- Type: `gauge`
+- Labels: none
+- Unit: KiB
+- Source: `${PROC_ROOT}/sys/kernel/perf_event_mlock_kb`
+- Interpretation: locked-memory allowance for perf event buffers
+
 ### `nixl_module_loaded`
 
 - Type: `gauge`
