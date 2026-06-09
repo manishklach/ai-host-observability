@@ -37,6 +37,7 @@ declare -a DEFAULT_EXPORTERS=(
   "nixl_netflow"
   "nixl_gpumem"
   "nixl_trace"
+  "nixl_consistency"
   "nixl_baseline"
   "nixl_collector"
 )
@@ -63,6 +64,7 @@ declare -A EXPORTER_SCRIPTS=(
   ["nixl_netflow"]="net-flow-exporter.sh"
   ["nixl_gpumem"]="gpu-mem-pressure-exporter.sh"
   ["nixl_trace"]="trace-event-exporter.sh"
+  ["nixl_consistency"]="host-consistency-exporter.sh"
   ["nixl_baseline"]="anomaly-baseline-exporter.sh"
   ["nixl_collector"]="collector-health-exporter.sh"
 )

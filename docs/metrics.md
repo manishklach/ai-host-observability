@@ -1794,6 +1794,79 @@ metric_relabel_configs:
 - Source: `${PROC_ROOT}/sys/kernel/perf_event_mlock_kb`
 - Interpretation: locked-memory allowance for perf event buffers
 
+## Host Consistency Exporter
+
+### `nixl_consistency_scrape_success`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `scripts/host-consistency-exporter.sh`
+
+### `nixl_host_kernel_version_info`
+
+- Type: `gauge`
+- Labels: `version`, `major`, `minor`, `patch`
+- Unit: constant `1`
+- Source: `uname -r`
+- Interpretation: kernel version fingerprint for cross-host drift detection
+
+### `nixl_host_driver_version_info`
+
+- Type: `gauge`
+- Labels: `driver`, `version`
+- Unit: constant `1`
+- Source: `nvidia-smi` and `modinfo`
+- Interpretation: driver version fingerprint for NVIDIA and RDMA-related kernel modules
+
+### `nixl_host_cuda_version_info`
+
+- Type: `gauge`
+- Labels: `version`
+- Unit: constant `1`
+- Source: `nvidia-smi`
+- Interpretation: CUDA runtime version fingerprint
+
+### `nixl_host_bios_version_info`
+
+- Type: `gauge`
+- Labels: `vendor`, `version`, `date`
+- Unit: constant `1`
+- Source: `dmidecode`
+- Interpretation: BIOS or firmware fingerprint for cross-host hardware drift checks
+
+### `nixl_host_cpu_microcode_info`
+
+- Type: `gauge`
+- Labels: `family`, `model`, `stepping`, `microcode`
+- Unit: constant `1`
+- Source: `${PROC_ROOT}/cpuinfo`
+- Interpretation: CPU microcode and stepping fingerprint
+
+### `nixl_host_identity_info`
+
+- Type: `gauge`
+- Labels: `hostname`, `fqdn`, `arch`
+- Unit: constant `1`
+- Source: `hostname`, `hostname -f`, `uname -m`
+- Interpretation: host identity labels for fleet-wide queries
+
+### `nixl_host_ulimit`
+
+- Type: `gauge`
+- Labels: `resource`, `type`
+- Unit: raw limit value or `-1` for unlimited
+- Source: shell `ulimit`
+- Interpretation: process resource limits relevant to AI host behavior
+
+### `nixl_host_sysctl`
+
+- Type: `gauge`
+- Labels: `name`
+- Unit: raw sysctl value
+- Source: `${PROC_ROOT}/sys/*`
+- Interpretation: sysctl conformance values for training and transport tuning
+
 ### `nixl_module_loaded`
 
 - Type: `gauge`

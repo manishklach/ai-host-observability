@@ -457,3 +457,51 @@ groups:
             profiling, perf sampling, and parts of the eBPF and tracing workflow
             operators rely on during GPU and NCCL incident response.
           runbook_url: docs/runbooks/PerfEventParanoidTooHigh.md
+
+      - alert: HostSysctlSuboptimalForNCCL
+        expr: nixl_host_sysctl{name="net.core.rmem_max"} < 268435456
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: Socket receive buffers are smaller than recommended.
+          description: >-
+            `net.core.rmem_max` is below 256 MiB, which often leaves NCCL and
+            RDMA-adjacent traffic under-buffered on busy training nodes.
+          runbook_url: docs/runbooks/HostSysctlSuboptimalForNCCL.md
+
+      - alert: NUMABalancingEnabled
+        expr: nixl_host_sysctl{name="kernel.numa_balancing"} == 1
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: NUMA balancing is enabled on the host.
+          description: >-
+            Automatic NUMA balancing can introduce page migration noise and memory
+            latency variance on GPU training hosts.
+          runbook_url: docs/runbooks/NUMABalancingEnabled.md
+
+      - alert: ZoneReclaimModeEnabled
+        expr: nixl_host_sysctl{name="vm.zone_reclaim_mode"} != 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: Zone reclaim mode is enabled.
+          description: >-
+            Local-zone reclaim is enabled, which can cause reclaim and latency
+            spikes before the kernel falls back to remote NUMA memory.
+          runbook_url: docs/runbooks/ZoneReclaimModeEnabled.md
+
+      - alert: UlimitMemlockTooLow
+        expr: nixl_host_ulimit{resource="memlock",type="hard"} < 1e12 unless nixl_host_ulimit{resource="memlock",type="hard"} == -1
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: memlock ulimit is too low for large pinned-memory workloads.
+          description: >-
+            The hard memlock limit is below one terabyte and not unlimited, which
+            can block large RDMA registrations and pinned-memory paths on AI hosts.
+          runbook_url: docs/runbooks/UlimitMemlockTooLow.md

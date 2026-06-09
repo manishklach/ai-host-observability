@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cat <<'EOF'
+BIOS Information
+	Vendor: ExampleCorp
+	Version: 2.5.1
+	Release Date: 03/17/2026
+EOF

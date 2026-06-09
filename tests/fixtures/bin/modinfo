@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+case "${1:-}" in
+  mlx5_core)
+    printf 'version:        5.8-1.1.2\n'
+    ;;
+  ib_core)
+    printf 'version:        231.0\n'
+    ;;
+esac

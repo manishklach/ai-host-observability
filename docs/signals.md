@@ -132,3 +132,11 @@
 - `nixl_timesync_rms_offset_seconds`
 - `nixl_timesync_freq_error_ppm`
 - `nixl_timesync_stratum`
+
+## Cross-Host Consistency Checks
+
+- `count by (version) (nixl_host_kernel_version_info) > 1`
+- `count by (version) (nixl_host_driver_version_info{driver="nvidia"}) > 1`
+- `nixl_host_sysctl{name="net.core.rmem_max"} < 268435456`
+- `nixl_host_sysctl{name="kernel.numa_balancing"} == 1`
+- `nixl_host_sysctl{name="vm.zone_reclaim_mode"} != 0`

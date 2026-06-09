@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "-f" ]]; then
+  printf 'gpu-node-01.example.net\n'
+else
+  printf 'gpu-node-01\n'
+fi
