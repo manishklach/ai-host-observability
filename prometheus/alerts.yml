@@ -288,3 +288,43 @@ groups:
             early warning that the node has moved out of its normal operating
             envelope even if user-visible failures have not started yet.
           runbook_url: docs/runbooks/MetricExceedsP99.md
+
+      - alert: TrainingJobStallSuspected
+        expr: nixl_job_stall_suspected == 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: A training job appears stalled.
+          description: >-
+            The host has active training-like processes and GPU activity, but no
+            checkpoint writes or log progress signals. The workload may be hung in
+            communication, input, filesystem, or framework runtime code.
+          runbook_url: docs/runbooks/TrainingJobStallSuspected.md
+
+      - alert: CheckpointWritesStalled
+        expr: nixl_job_checkpoint_last_write_age_seconds > 3600 and nixl_job_training_processes_total > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: Training checkpoints have stopped refreshing.
+          description: >-
+            Training-like processes are still running, but the newest checkpoint
+            beneath a watched root is older than one hour. Recovery points may be
+            stale and the job may be making no useful progress.
+          runbook_url: docs/runbooks/CheckpointWritesStalled.md
+
+      - alert: TrainingProcessDied
+        expr: nixl_job_training_processes_total == 0 and nixl_gpu_utilization_percent > 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: GPU activity is present without a visible training process.
+          description: >-
+            GPU utilization is still above five percent, but no training-like
+            process is visible to the heartbeat exporter. A launcher may have
+            crashed, the process may be orphaned, or GPU context cleanup may be
+            incomplete.
+          runbook_url: docs/runbooks/TrainingProcessDied.md

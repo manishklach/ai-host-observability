@@ -1309,6 +1309,95 @@ metric_relabel_configs:
 - Source: `${OUT_DIR}/.baseline/*.window`
 - Interpretation: number of retained samples used to compute the rolling baseline
 
+## Training Job Heartbeat Exporter
+
+### `nixl_job_scrape_success`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `scripts/job-heartbeat-exporter.sh`
+
+### `nixl_job_training_processes_total`
+
+- Type: `gauge`
+- Labels: none
+- Unit: count
+- Source: training-like process scan
+- Interpretation: number of likely training processes currently visible on the host
+
+### `nixl_job_process_uptime_seconds`
+
+- Type: `gauge`
+- Labels: `pid`, `cmdline_summary`
+- Unit: seconds
+- Source: `ps`
+- Interpretation: uptime for a detected training-like process
+
+### `nixl_job_process_cpu_percent`
+
+- Type: `gauge`
+- Labels: `pid`, `cmdline_summary`
+- Unit: percent
+- Source: `ps`
+- Interpretation: CPU usage for a detected training-like process
+
+### `nixl_job_process_mem_rss_bytes`
+
+- Type: `gauge`
+- Labels: `pid`, `cmdline_summary`
+- Unit: bytes
+- Source: `ps`
+- Interpretation: RSS footprint for a detected training-like process
+
+### `nixl_job_checkpoint_files_recent`
+
+- Type: `gauge`
+- Labels: `dir`
+- Unit: count
+- Source: watched checkpoint roots
+- Interpretation: checkpoint files modified within the freshness window
+
+### `nixl_job_checkpoint_last_write_age_seconds`
+
+- Type: `gauge`
+- Labels: `dir`
+- Unit: seconds
+- Source: watched checkpoint roots
+- Interpretation: age of the newest checkpoint beneath the configured root
+
+### `nixl_job_log_last_step`
+
+- Type: `gauge`
+- Labels: `logfile`
+- Unit: steps
+- Source: watched training log files
+- Interpretation: last step-like progress marker found in the recent tail of the log
+
+### `nixl_job_log_last_update_age_seconds`
+
+- Type: `gauge`
+- Labels: `logfile`
+- Unit: seconds
+- Source: watched training log files
+- Interpretation: how stale the log file itself is
+
+### `nixl_job_stall_suspected`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: derived from process presence, GPU activity, checkpoints, and logs
+- Interpretation: host-level suspicion that training is active but not making progress
+
+### `nixl_job_stall_duration_seconds`
+
+- Type: `gauge`
+- Labels: none
+- Unit: seconds
+- Source: `${OUT_DIR}/.heartbeat/stall.state`
+- Interpretation: duration of the currently suspected stalled state
+
 ### `nixl_module_loaded`
 
 - Type: `gauge`

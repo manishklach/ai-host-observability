@@ -33,6 +33,7 @@ declare -a DEFAULT_EXPORTERS=(
   "nixl_nvlink"
   "nixl_watchdog"
   "nixl_timesync"
+  "nixl_job"
   "nixl_baseline"
 )
 
@@ -54,6 +55,7 @@ declare -A EXPORTER_SCRIPTS=(
   ["nixl_nvlink"]="nvlink-exporter.sh"
   ["nixl_watchdog"]="watchdog-exporter.sh"
   ["nixl_timesync"]="timesync-exporter.sh"
+  ["nixl_job"]="job-heartbeat-exporter.sh"
   ["nixl_baseline"]="anomaly-baseline-exporter.sh"
 )
 
