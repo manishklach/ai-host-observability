@@ -2,27 +2,27 @@
 set -euo pipefail
 
 case "$*" in
-  *"--tcp --info state established"*)
-    cat <<'EOF'
+*"--tcp --info state established"*)
+  cat <<'EOF'
 ESTAB 0 0 10.0.0.10:45000 10.0.0.11:45100 cubic wscale:7,7 rto:204 rtt:1.2/0.3 mss:1448 cwnd:10 bytes_sent:42000 bytes_acked:42000 retrans:3/7
 ESTAB 0 0 10.0.0.10:4791 10.0.0.12:49000 cubic wscale:7,7 rto:204 rtt:1.5/0.4 mss:1448 cwnd:8 bytes_sent:28000 bytes_acked:28000 retrans:1/4
 ESTAB 0 0 10.0.0.10:22 10.0.0.20:51432 cubic wscale:7,7 rto:205 rtt:2.1/0.4 mss:1448 cwnd:10 bytes_sent:8192 bytes_acked:8192 retrans:0/0
 EOF
-    ;;
-  *"--tcp --info state time-wait"*)
-    cat <<'EOF'
+  ;;
+*"--tcp --info state time-wait"*)
+  cat <<'EOF'
 TIME-WAIT 0 0 10.0.0.10:45000 10.0.0.11:45100
 TIME-WAIT 0 0 10.0.0.10:45001 10.0.0.13:45101
 EOF
-    ;;
-  *"--tcp --info state close-wait"*)
-    cat <<'EOF'
+  ;;
+*"--tcp --info state close-wait"*)
+  cat <<'EOF'
 CLOSE-WAIT 0 0 10.0.0.10:2222 10.0.0.21:55211
 EOF
-    ;;
-  *"--udp state established"*)
-    cat <<'EOF'
+  ;;
+*"--udp state established"*)
+  cat <<'EOF'
 ESTAB 0 0 10.0.0.10:50000 10.0.0.30:50001
 EOF
-    ;;
+  ;;
 esac

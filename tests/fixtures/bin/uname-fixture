@@ -2,6 +2,6 @@
 set -euo pipefail
 
 case "${1:-}" in
-  -r) printf '6.5.0-45-generic\n' ;;
-  -m) printf 'x86_64\n' ;;
+-r) printf '6.5.0-45-generic\n' ;;
+-m) printf 'x86_64\n' ;;
 esac
