@@ -505,3 +505,16 @@ groups:
             The hard memlock limit is below one terabyte and not unlimited, which
             can block large RDMA registrations and pinned-memory paths on AI hosts.
           runbook_url: docs/runbooks/UlimitMemlockTooLow.md
+
+      - alert: HostHealthScoreLow
+        expr: nixl:host:health_score < 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Composite host health score is low.
+          description: >-
+            The recorded composite host health score has dropped below 0.8,
+            indicating at least one of the GPU, storage, or fabric health layers
+            is degraded enough to affect confidence in the node.
+          runbook_url: docs/runbooks/HostHealthScoreLow.md

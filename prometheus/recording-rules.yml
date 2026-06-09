@@ -1,0 +1,54 @@
+groups:
+  - name: nixl_hourly
+    interval: 1m
+    rules:
+      - record: nixl:gpu:utilization_avg_1h
+        expr: avg_over_time(nixl_gpu_utilization_percent[1h])
+
+      - record: nixl:gpu:temperature_max_1h
+        expr: max_over_time(nixl_gpu_temperature_celsius[1h])
+
+      - record: nixl:memory:psi_some_avg_1h
+        expr: avg_over_time(nixl_host_memory_psi_avg{scope="some",window="60s"}[1h])
+
+      - record: nixl:disk:io_utilization_avg_1h
+        expr: avg_over_time((rate(nixl_diskstat_total{field="ms_io"}[5m]) / 10)[1h:1m])
+
+      - record: nixl:net:rx_bytes_rate_avg_1h
+        expr: avg_over_time(rate(nixl_netdev_total{field="rx_bytes"}[5m])[1h:1m])
+
+      - record: nixl:ib:rcv_errors_rate_avg_1h
+        expr: avg_over_time(rate(nixl_infiniband_counter{counter="port_rcv_errors"}[5m])[1h:1m])
+
+  - name: nixl_daily
+    interval: 5m
+    rules:
+      - record: nixl:gpu:utilization_avg_24h
+        expr: avg_over_time(nixl:gpu:utilization_avg_1h[24h:1h])
+
+      - record: nixl:memory:psi_p95_24h
+        expr: quantile_over_time(0.95, nixl_host_memory_psi_avg{scope="some",window="60s"}[24h:1m])
+
+      - record: nixl:nvme:percentage_used_max
+        expr: max by (device, model, serial) (nixl_nvme_percentage_used)
+
+      - record: nixl:gpu:ecc_errors_daily
+        expr: increase(nixl_gpu_ecc_volatile_total[24h])
+
+      - record: nixl:edac:ce_errors_daily
+        expr: increase(nixl_edac_correctable_errors_total[24h])
+
+  - name: nixl_slo
+    interval: 1m
+    rules:
+      - record: nixl:gpu:available
+        expr: min by (index, uuid) (nixl_gpu_pstate{pstate="P0"} * (1 - nixl_gpu_throttle_reason{reason="hw_slowdown"}))
+
+      - record: nixl:storage:healthy
+        expr: min by (device) (nixl_nvme_available_spare_percent > bool 20)
+
+      - record: nixl:fabric:healthy
+        expr: min by (device, port) (nixl_ib_port_state{state="ACTIVE"} * (1 - bool(rate(nixl_infiniband_counter{counter="port_rcv_errors"}[5m]) > 0)))
+
+      - record: nixl:host:health_score
+        expr: (avg(nixl:gpu:available) + avg(nixl:storage:healthy) + avg(nixl:fabric:healthy)) / 3
