@@ -35,6 +35,7 @@ declare -a DEFAULT_EXPORTERS=(
   "nixl_timesync"
   "nixl_job"
   "nixl_netflow"
+  "nixl_gpumem"
   "nixl_baseline"
   "nixl_collector"
 )
@@ -59,6 +60,7 @@ declare -A EXPORTER_SCRIPTS=(
   ["nixl_timesync"]="timesync-exporter.sh"
   ["nixl_job"]="job-heartbeat-exporter.sh"
   ["nixl_netflow"]="net-flow-exporter.sh"
+  ["nixl_gpumem"]="gpu-mem-pressure-exporter.sh"
   ["nixl_baseline"]="anomaly-baseline-exporter.sh"
   ["nixl_collector"]="collector-health-exporter.sh"
 )

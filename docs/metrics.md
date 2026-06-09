@@ -1608,6 +1608,119 @@ metric_relabel_configs:
 - Source: unique metric lines across exporter outputs
 - Interpretation: approximate unique time-series count produced by the current `.prom` corpus
 
+## GPU Memory Pressure Exporter
+
+### `nixl_gpumem_scrape_success`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `scripts/gpu-mem-pressure-exporter.sh`
+
+### `nixl_gpu_process_memory_bytes`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`, `pid`, `process_name`
+- Unit: bytes
+- Source: `nvidia-smi --query-compute-apps`
+- Interpretation: per-process GPU memory footprint attributed by the NVIDIA driver
+
+### `nixl_gpu_process_count`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: count
+- Source: `nvidia-smi --query-compute-apps`
+- Interpretation: number of visible GPU-using processes per device
+
+### `nixl_gpu_memory_free_bytes`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: bytes
+- Source: `nvidia-smi --query-gpu`
+- Interpretation: free GPU memory reported by the driver
+
+### `nixl_gpu_memory_reserved_bytes`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: bytes
+- Source: derived from total, used, and free GPU memory
+- Interpretation: driver-reserved memory not shown as application-used
+
+### `nixl_gpu_memory_fragmentation_ratio`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: ratio `0..1`
+- Source: derived from reserved and total GPU memory
+- Interpretation: approximate memory fragmentation or reserve pressure signal
+
+### `nixl_gpu_compute_mode`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`, `mode`
+- Unit: constant `1`
+- Source: `nvidia-smi --query-gpu`
+- Interpretation: current compute mode fingerprint
+
+### `nixl_gpu_mig_mode`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`, `mode`
+- Unit: constant `1`
+- Source: `nvidia-smi --query-gpu`
+- Interpretation: current MIG mode fingerprint
+
+### `nixl_gpu_retired_pages_sbe`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: pages
+- Source: `nvidia-smi --query-gpu`
+- Interpretation: retired pages due to single-bit ECC events
+
+### `nixl_gpu_retired_pages_dbe`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: pages
+- Source: `nvidia-smi --query-gpu`
+- Interpretation: retired pages due to double-bit ECC events
+
+### `nixl_gpu_retired_pages_pending`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: pages
+- Source: `nvidia-smi --query-gpu`
+- Interpretation: pages pending retirement that often require maintenance action
+
+### `nixl_gpu_remapped_rows_correctable`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: rows
+- Source: `nvidia-smi --query-gpu`
+- Interpretation: correctable remapped memory rows
+
+### `nixl_gpu_remapped_rows_uncorrectable`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: rows
+- Source: `nvidia-smi --query-gpu`
+- Interpretation: uncorrectable remapped memory rows
+
+### `nixl_gpu_remapped_rows_pending`
+
+- Type: `gauge`
+- Labels: `index`, `uuid`
+- Unit: rows
+- Source: `nvidia-smi --query-gpu`
+- Interpretation: rows pending remap that indicate degraded device health
+
 ### `nixl_module_loaded`
 
 - Type: `gauge`

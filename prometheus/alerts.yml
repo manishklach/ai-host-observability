@@ -393,3 +393,54 @@ groups:
             Treat this as a textfile pipeline incident before trusting the absence
             of other alerts from the node.
           runbook_url: docs/runbooks/CollectionPipelineStalled.md
+
+      - alert: GPUMemoryFragmentationHigh
+        expr: nixl_gpu_memory_fragmentation_ratio > 0.15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: GPU memory fragmentation is elevated.
+          description: >-
+            More than fifteen percent of a GPU's memory appears reserved by the
+            driver rather than available to applications. Large allocations may fail
+            sooner than the visible used/free split suggests.
+          runbook_url: docs/runbooks/GPUMemoryFragmentationHigh.md
+
+      - alert: GPURetiredPagesPending
+        expr: nixl_gpu_retired_pages_pending > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: A GPU has pages pending retirement.
+          description: >-
+            The GPU has ECC-related page retirement work pending, which usually
+            means a reboot is required to fully apply the retirement and restore
+            steady-state protection.
+          runbook_url: docs/runbooks/GPURetiredPagesPending.md
+
+      - alert: GPURemappedRowsPending
+        expr: nixl_gpu_remapped_rows_pending > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: A GPU has rows pending remap.
+          description: >-
+            Uncorrectable or pending row remaps indicate hardware degradation on
+            the GPU memory path. Treat the device as at risk for future failures.
+          runbook_url: docs/runbooks/GPURemappedRowsPending.md
+
+      - alert: GPUMemoryOversubscribed
+        expr: sum by (index, uuid) (nixl_gpu_process_memory_bytes) > on (index, uuid) (nixl_gpu_memory_total_bytes * 0.95)
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: GPU memory is close to exhaustion.
+          description: >-
+            Processes mapped to the GPU are collectively using more than
+            ninety-five percent of total device memory. The next large allocation
+            may fail even if utilization still looks acceptable.
+          runbook_url: docs/runbooks/GPUMemoryOversubscribed.md

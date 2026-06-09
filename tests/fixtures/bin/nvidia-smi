@@ -48,6 +48,19 @@ EOF
 EOF
   exit 0
   ;;
+--query-gpu=index,uuid,memory.used,memory.total,memory.free,compute_mode,mig.mode.current,retired_pages.single_bit_ecc.count,retired_pages.double_bit.count,retired_pages.pending,remapped_rows.correctable,remapped_rows.uncorrectable,remapped_rows.pending)
+  cat <<'EOF'
+0, GPU-123, 10240, 16384, 4096, Default, Disabled, 2, 0, 1, 4, 0, 1
+EOF
+  exit 0
+  ;;
+--query-compute-apps=gpu_uuid,pid,used_gpu_memory,process_name)
+  cat <<'EOF'
+GPU-123, 4242, 6144, python
+GPU-123, 4343, 1024, nccl-worker
+EOF
+  exit 0
+  ;;
 esac
 
 cat <<'EOF'
