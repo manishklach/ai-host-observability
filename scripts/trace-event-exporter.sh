@@ -29,7 +29,7 @@ while IFS= read -r enable_file; do
   subsystem="$(basename "$(dirname "$(dirname "${enable_file}")")")"
   enabled_value="$(safe_read_file "${enable_file}" || true)"
   if is_integer "${enabled_value}" && ((enabled_value == 1)); then
-    enabled_counts["${subsystem}"]=$(( ${enabled_counts["${subsystem}"]:-0} + 1 ))
+    enabled_counts["${subsystem}"]=$((${enabled_counts["${subsystem}"]:-0} + 1))
   fi
 done < <(find "${TRACING_ROOT}/events" -type f -name enable 2>/dev/null || true)
 
@@ -56,15 +56,15 @@ fi
 if [[ -r "${PROC_ROOT}/vmstat" ]]; then
   while read -r key value; do
     case "${key}" in
-      pgalloc_normal)
-        is_integer "${value}" && emit_metric "nixl_trace_mm_page_alloc_total" "${value}"
-        ;;
-      pgfree)
-        is_integer "${value}" && emit_metric "nixl_trace_mm_page_free_total" "${value}"
-        ;;
-      slabs_scanned)
-        is_integer "${value}" && emit_metric "nixl_trace_kmem_cache_alloc_total" "${value}"
-        ;;
+    pgalloc_normal)
+      is_integer "${value}" && emit_metric "nixl_trace_mm_page_alloc_total" "${value}"
+      ;;
+    pgfree)
+      is_integer "${value}" && emit_metric "nixl_trace_mm_page_free_total" "${value}"
+      ;;
+    slabs_scanned)
+      is_integer "${value}" && emit_metric "nixl_trace_kmem_cache_alloc_total" "${value}"
+      ;;
     esac
   done <"${PROC_ROOT}/vmstat"
 fi

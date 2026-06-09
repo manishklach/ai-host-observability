@@ -125,13 +125,13 @@ training_processes=0
 while read -r pid etimes cpu rss cmdline; do
   [[ -n "${pid}" ]] || continue
   case "${cmdline}" in
-    *python*|*torchrun*|*deepspeed*|*accelerate*|*mpirun*|*srun*)
-      summary="$(summarize_cmdline "${cmdline}")"
-      training_processes=$((training_processes + 1))
-      is_integer "${etimes}" && emit_metric "nixl_job_process_uptime_seconds" "${etimes}" "pid=${pid}" "cmdline_summary=${summary}"
-      is_number "${cpu}" && emit_metric "nixl_job_process_cpu_percent" "${cpu}" "pid=${pid}" "cmdline_summary=${summary}"
-      is_integer "${rss}" && emit_metric "nixl_job_process_mem_rss_bytes" "$((rss * 1024))" "pid=${pid}" "cmdline_summary=${summary}"
-      ;;
+  *python* | *torchrun* | *deepspeed* | *accelerate* | *mpirun* | *srun*)
+    summary="$(summarize_cmdline "${cmdline}")"
+    training_processes=$((training_processes + 1))
+    is_integer "${etimes}" && emit_metric "nixl_job_process_uptime_seconds" "${etimes}" "pid=${pid}" "cmdline_summary=${summary}"
+    is_number "${cpu}" && emit_metric "nixl_job_process_cpu_percent" "${cpu}" "pid=${pid}" "cmdline_summary=${summary}"
+    is_integer "${rss}" && emit_metric "nixl_job_process_mem_rss_bytes" "$((rss * 1024))" "pid=${pid}" "cmdline_summary=${summary}"
+    ;;
   esac
 done < <("${PS_CMD}" -eo pid=,etimes=,pcpu=,rss=,args= 2>/dev/null || true)
 emit_metric "nixl_job_training_processes_total" "${training_processes}"

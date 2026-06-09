@@ -16,10 +16,10 @@ NOW_EPOCH="${NOW_EPOCH:-$(date +%s)}"
 port_class() {
   local port="$1"
   case "${port}" in
-    4791) printf 'rdma\n' ;;
-    22) printf 'ssh\n' ;;
-    40000|4[0-9][0-9][0-9][0-9]|50000|5[0-9][0-9][0-9][0-9]|60000) printf 'nccl\n' ;;
-    *) printf 'other\n' ;;
+  4791) printf 'rdma\n' ;;
+  22) printf 'ssh\n' ;;
+  40000 | 4[0-9][0-9][0-9][0-9] | 50000 | 5[0-9][0-9][0-9][0-9] | 60000) printf 'nccl\n' ;;
+  *) printf 'other\n' ;;
   esac
 }
 
@@ -79,14 +79,14 @@ while read -r state _q1 _q2 local_addr remote_addr _rest; do
   local_port="${local_addr##*:}"
   remote_prefix="$(remote_host_prefix "${remote_addr}")"
   class="$(port_class "${local_port}")"
-  tcp_counts["${class}"]=$(( ${tcp_counts["${class}"]:-0} + 1 ))
+  tcp_counts["${class}"]=$((${tcp_counts["${class}"]:-0} + 1))
   if [[ "${class}" == "nccl" ]]; then
     nccl_connections=$((nccl_connections + 1))
     [[ -n "${remote_prefix}" ]] && nccl_hosts["${remote_prefix}"]=1
   fi
   retrans="$(grep -o 'retrans:[0-9]\+' <<<"${_rest}" | head -n1 | cut -d: -f2)"
   if is_integer "${retrans}"; then
-    retrans_counts["${class}"]=$(( ${retrans_counts["${class}"]:-0} + retrans ))
+    retrans_counts["${class}"]=$((${retrans_counts["${class}"]:-0} + retrans))
   fi
 done < <("${SS_CMD}" --no-header --tcp --info state established 2>/dev/null || true)
 
