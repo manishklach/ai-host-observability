@@ -38,7 +38,7 @@ empty_exporters=0
 total_metrics=0
 total_size=0
 unique_series_file="$(mktemp)"
->"${unique_series_file}"
+: >"${unique_series_file}"
 
 shopt -s nullglob
 for prom_file in "${OUT_DIR}"/*.prom; do

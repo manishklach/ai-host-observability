@@ -18,6 +18,8 @@ prom_files() {
 read_last_value() {
   local metric_name="$1"
   local label_filter="${2:-}"
+  local -a files
+  mapfile -t files < <(prom_files)
   awk -v metric_name="${metric_name}" -v label_filter="${label_filter}" '
     index($0, "#") == 1 { next }
     $1 !~ "^" metric_name "([{| ]|$)" { next }
@@ -28,13 +30,15 @@ read_last_value() {
         print value
       }
     }
-  ' $(prom_files)
+  ' "${files[@]}"
 }
 
 aggregate_values() {
   local metric_name="$1"
   local label_filter="${2:-}"
   local mode="$3"
+  local -a files
+  mapfile -t files < <(prom_files)
   awk -v metric_name="${metric_name}" -v label_filter="${label_filter}" -v mode="${mode}" '
     index($0, "#") == 1 { next }
     $1 !~ "^" metric_name "([{| ]|$)" { next }
@@ -58,7 +62,7 @@ aggregate_values() {
         printf "%.6f\n", sum
       }
     }
-  ' $(prom_files)
+  ' "${files[@]}"
 }
 
 counter_proxy_value() {
