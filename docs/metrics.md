@@ -1487,6 +1487,127 @@ metric_relabel_configs:
 - Source: `${PROC_ROOT}/net/netstat`
 - Interpretation: selected extended TCP stack counters not surfaced in the generic SNMP view
 
+## Collector Health Exporter
+
+### `nixl_collector_scrape_success`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `scripts/collector-health-exporter.sh`
+
+### `nixl_collector_last_run_timestamp`
+
+- Type: `gauge`
+- Labels: `exporter`
+- Unit: unix timestamp
+- Source: `.prom` file modification time
+- Interpretation: last write timestamp for an exporter output file
+
+### `nixl_collector_last_run_age_seconds`
+
+- Type: `gauge`
+- Labels: `exporter`
+- Unit: seconds
+- Source: derived from file mtime
+- Interpretation: freshness of an exporter output file
+
+### `nixl_collector_last_run_duration_seconds`
+
+- Type: `gauge`
+- Labels: `exporter`
+- Unit: seconds
+- Source: `ai_host_exporter_duration_seconds` parsed from wrapped output
+- Interpretation: last observed execution time for an exporter when the wrapper recorded it
+
+### `nixl_collector_prom_file_size_bytes`
+
+- Type: `gauge`
+- Labels: `exporter`
+- Unit: bytes
+- Source: file stat
+- Interpretation: on-disk size of an exporter output file
+
+### `nixl_collector_prom_file_lines`
+
+- Type: `gauge`
+- Labels: `exporter`
+- Unit: lines
+- Source: file contents
+- Interpretation: total line count of an exporter output file
+
+### `nixl_collector_prom_file_metric_count`
+
+- Type: `gauge`
+- Labels: `exporter`
+- Unit: count
+- Source: file contents
+- Interpretation: non-comment metric sample count inside an exporter output file
+
+### `nixl_collector_exporters_total`
+
+- Type: `gauge`
+- Labels: none
+- Unit: count
+- Source: `${OUT_DIR}/*.prom`
+- Interpretation: number of exporter outputs currently present
+
+### `nixl_collector_exporters_stale`
+
+- Type: `gauge`
+- Labels: none
+- Unit: count
+- Source: exporter file mtimes
+- Interpretation: how many exporter outputs are older than the stale threshold
+
+### `nixl_collector_exporters_empty`
+
+- Type: `gauge`
+- Labels: none
+- Unit: count
+- Source: exporter file contents
+- Interpretation: exporter outputs with zero metric samples
+
+### `nixl_collector_total_metrics`
+
+- Type: `gauge`
+- Labels: none
+- Unit: count
+- Source: exporter file contents
+- Interpretation: total metric sample count across all exporter outputs
+
+### `nixl_collector_total_prom_size_bytes`
+
+- Type: `gauge`
+- Labels: none
+- Unit: bytes
+- Source: exporter file stats
+- Interpretation: total disk footprint of the textfile collector outputs
+
+### `nixl_collector_node_exporter_running`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: process scan
+- Interpretation: whether node_exporter appears to be running locally
+
+### `nixl_collector_textfile_dir_writable`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: filesystem permission check
+- Interpretation: whether the textfile collector directory is writable
+
+### `nixl_collector_unique_series_estimate`
+
+- Type: `gauge`
+- Labels: none
+- Unit: count
+- Source: unique metric lines across exporter outputs
+- Interpretation: approximate unique time-series count produced by the current `.prom` corpus
+
 ### `nixl_module_loaded`
 
 - Type: `gauge`

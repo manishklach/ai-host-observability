@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cat <<'EOF'
+node_exporter /usr/bin/node_exporter --collector.textfile.directory=/var/lib/node_exporter/textfile_collector
+EOF

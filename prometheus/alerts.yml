@@ -354,3 +354,42 @@ groups:
             usually points to congestion, packet loss, or path instability between
             training nodes.
           runbook_url: docs/runbooks/TCPRetransmitRateHigh.md
+
+      - alert: ExporterStale
+        expr: nixl_collector_last_run_age_seconds > 120
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: An exporter textfile is stale.
+          description: >-
+            One or more exporter `.prom` files have not been refreshed inside the
+            expected window. The collection pipeline may be blocked, the exporter
+            may be hanging, or permissions may have changed.
+          runbook_url: docs/runbooks/ExporterStale.md
+
+      - alert: NodeExporterNotRunning
+        expr: nixl_collector_node_exporter_running == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: node_exporter is not visible on the host.
+          description: >-
+            The collector health exporter cannot see a node_exporter process, so
+            Prometheus may not be scraping any textfile collector output from this
+            node.
+          runbook_url: docs/runbooks/NodeExporterNotRunning.md
+
+      - alert: CollectionPipelineStalled
+        expr: nixl_collector_exporters_stale / clamp_min(nixl_collector_exporters_total, 1) > 0.5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: More than half of exporter outputs are stale.
+          description: >-
+            The majority of exporter outputs have gone stale at the same time.
+            Treat this as a textfile pipeline incident before trusting the absence
+            of other alerts from the node.
+          runbook_url: docs/runbooks/CollectionPipelineStalled.md
