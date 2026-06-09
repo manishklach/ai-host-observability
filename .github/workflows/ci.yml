@@ -35,7 +35,9 @@ jobs:
         run: shellcheck ${SHELLCHECK_OPTS} tests/helpers.bash tests/*.bats
 
       - name: Validate Grafana JSON
-        run: jq empty grafana/ai-host-overview.json
+        run: |
+          jq empty grafana/ai-host-overview.json
+          jq empty grafana/ai-host-anomaly.json
 
       - name: Validate alert rules
         run: |
