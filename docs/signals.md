@@ -140,3 +140,60 @@
 - `nixl_host_sysctl{name="net.core.rmem_max"} < 268435456`
 - `nixl_host_sysctl{name="kernel.numa_balancing"} == 1`
 - `nixl_host_sysctl{name="vm.zone_reclaim_mode"} != 0`
+
+## Anomaly Baselines
+
+- `nixl_baseline_current`
+- `nixl_baseline_mean`
+- `nixl_baseline_p99`
+- `nixl_baseline_zscore`
+- `nixl_baseline_window_size`
+
+## Training Job Progress
+
+- `nixl_job_training_processes_total`
+- `nixl_job_checkpoint_last_write_age_seconds`
+- `nixl_job_log_last_step`
+- `nixl_job_stall_suspected`
+- `nixl_job_stall_duration_seconds`
+
+## Network Flow and Retransmits
+
+- `nixl_netflow_tcp_established_total`
+- `nixl_netflow_tcp_retrans_total`
+- `nixl_netflow_iface_rx_utilization_ratio`
+- `nixl_netflow_iface_tx_utilization_ratio`
+- `nixl_netstat_ext`
+
+## Collection Pipeline Health
+
+- `nixl_collector_last_run_age_seconds`
+- `nixl_collector_prom_file_metric_count`
+- `nixl_collector_exporters_stale`
+- `nixl_collector_node_exporter_running`
+- `nixl_collector_unique_series_estimate`
+
+## GPU Memory Pressure and Reliability
+
+- `nixl_gpu_process_memory_bytes`
+- `nixl_gpu_process_count`
+- `nixl_gpu_memory_reserved_bytes`
+- `nixl_gpu_memory_fragmentation_ratio`
+- `nixl_gpu_retired_pages_pending`
+- `nixl_gpu_remapped_rows_pending`
+
+## Trace and Profiling Readiness
+
+- `nixl_trace_events_enabled_total`
+- `nixl_trace_function_hit_total`
+- `nixl_trace_mm_page_alloc_total`
+- `nixl_perf_event_paranoid`
+- `nixl_perf_event_max_sample_rate`
+
+## Long-Term Trending and SLO Views
+
+- `nixl:gpu:utilization_avg_1h`
+- `nixl:gpu:utilization_avg_24h`
+- `nixl:memory:psi_some_avg_1h`
+- `nixl:memory:psi_p95_24h`
+- `nixl:host:health_score`

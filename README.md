@@ -42,12 +42,19 @@ flowchart LR
 - kernel log patterns for OOM, PCIe/AER, VFIO, IOMMU, RDMA, GPU XID, watchdog, soft lockup, and RCU stall events
 - NVIDIA GPU telemetry through `nvidia-smi`
 - GPU throttle reasons, P-state, and NVLink fabric health
+- GPU memory fragmentation, retired pages, remapped rows, and per-process HBM footprint
 - disk/filesystem pressure
 - generic `/proc/net` network stack counters
+- TCP flow classes, retransmit pressure, and interface utilization ratios
 - per-process locked memory
 - hugepage inventory and THP fallback behavior
 - NTP and chrony synchronisation and offset health
 - PCIe/VFIO/IOMMU visibility
+- tracefs event inventory and perf/profiling readiness
+- training heartbeat, checkpoint freshness, and job stall suspicion
+- exporter self-telemetry and collection pipeline health
+- host drift facts for kernel, driver, BIOS, sysctl, and ulimit consistency checks
+- host-local anomaly baselines and Prometheus long-term recording rules
 
 ## Quick Triage Workflow
 
@@ -150,7 +157,7 @@ Prometheus scrapes `node_exporter`; this repo does not expose its own HTTP serve
 
 ## Grafana
 
-Import `grafana/ai-host-overview.json` into Grafana and connect it to your Prometheus datasource.
+Import `grafana/ai-host-overview.json` for the broad host view and `grafana/ai-host-anomaly.json` for anomaly detection, job heartbeat, long-term trends, and collection pipeline health.
 
 ## Sample Metrics
 
@@ -185,6 +192,7 @@ More realistic textfile examples live in [examples/sample-output](examples/sampl
 ## Documentation
 
 - [Metrics contract](docs/metrics.md)
+- [Operations guide](docs/ops-guide.md)
 - [Runbooks](docs/runbooks)
 - [Incident demo: GPU looks fine, host is dying](docs/demos/host-oom-before-gpu-oom.md)
 - [Why not just use DCGM or node_exporter?](docs/why-not-dcgm-or-node-exporter.md)
