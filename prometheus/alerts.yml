@@ -332,7 +332,7 @@ groups:
           runbook_url: docs/runbooks/TrainingJobStallSuspected.md
 
       - alert: CheckpointWritesStalled
-        expr: nixl_job_checkpoint_last_write_age_seconds > 3600 and nixl_job_training_processes_total > 0
+        expr: nixl_job_checkpoint_last_write_age_seconds * scalar(max(nixl_job_training_processes_total) > bool 0) > 3600
         for: 0m
         labels:
           severity: warning
@@ -346,7 +346,7 @@ groups:
           runbook_url: docs/runbooks/CheckpointWritesStalled.md
 
       - alert: TrainingProcessDied
-        expr: nixl_job_training_processes_total == 0 and nixl_gpu_utilization_percent > 5
+        expr: nixl_gpu_utilization_percent * scalar(max(nixl_job_training_processes_total) == bool 0) > 5
         for: 5m
         labels:
           severity: critical

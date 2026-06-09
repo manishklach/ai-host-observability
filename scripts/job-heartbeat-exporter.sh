@@ -91,8 +91,9 @@ extract_last_step() {
 write_state() {
   local pid="$1"
   local step="$2"
+  local updated="${3:-${NOW_EPOCH}}"
   mkdir -p "${STATE_DIR}"
-  printf 'step=%s\nupdated=%s\n' "${step}" "${NOW_EPOCH}" >"${STATE_DIR}/${pid}.state"
+  printf 'step=%s\nupdated=%s\n' "${step}" "${updated}" >"${STATE_DIR}/${pid}.state"
 }
 
 read_state_step() {
@@ -103,6 +104,21 @@ read_state_step() {
   else
     printf '0\n'
   fi
+}
+
+read_state_progress_updated() {
+  local pid="$1"
+  local state_file="${STATE_DIR}/${pid}.state"
+  if [[ -r "${state_file}" ]]; then
+    awk -F= '$1 == "updated" { print $2 }' "${state_file}"
+  else
+    printf '0\n'
+  fi
+}
+
+log_state_key() {
+  local path="$1"
+  printf '%s\n' "${path//[^[:alnum:]]/_}"
 }
 
 prom_begin_scrape "nixl_job_scrape_success" "Whether the training job heartbeat exporter completed successfully."
@@ -174,6 +190,7 @@ for checkpoint_root in "${checkpoint_roots[@]}"; do
 done
 
 any_log_progress=0
+any_recent_log_update=0
 most_recent_log_age=0
 read -r -a log_roots <<<"${LOG_DIRS}"
 for log_root in "${log_roots[@]}"; do
@@ -184,7 +201,24 @@ for log_root in "${log_roots[@]}"; do
     last_step="$(extract_last_step "${log_file}")"
     emit_metric "nixl_job_log_last_step" "${last_step}" "logfile=${log_file}"
     emit_metric "nixl_job_log_last_update_age_seconds" "${log_age}" "logfile=${log_file}"
-    if awk -v step="${last_step}" 'BEGIN { exit !(step > 0) }'; then
+    if awk -v age="${log_age}" -v threshold="${STALL_THRESHOLD_SECONDS}" 'BEGIN { exit !(age <= threshold) }'; then
+      any_recent_log_update=1
+    fi
+
+    state_key="$(log_state_key "${log_file}")"
+    previous_step="$(read_state_step "${state_key}")"
+    progress_updated="$(read_state_progress_updated "${state_key}")"
+    if ! is_integer "${progress_updated}"; then
+      progress_updated=0
+    fi
+    if awk -v step="${last_step}" -v previous="${previous_step}" 'BEGIN { exit !(step > previous) }'; then
+      progress_updated="${NOW_EPOCH}"
+    elif ((progress_updated == 0)) && awk -v step="${last_step}" 'BEGIN { exit !(step > 0) }'; then
+      progress_updated="${NOW_EPOCH}"
+    fi
+    write_state "${state_key}" "${last_step}" "${progress_updated}"
+
+    if awk -v updated="${progress_updated}" -v now="${NOW_EPOCH}" -v threshold="${STALL_THRESHOLD_SECONDS}" 'BEGIN { exit !((updated > 0) && ((now - updated) <= threshold)) }'; then
       any_log_progress=1
     fi
     if ((most_recent_log_age == 0 || log_age < most_recent_log_age)); then
@@ -193,18 +227,9 @@ for log_root in "${log_roots[@]}"; do
   done < <("${FIND_CMD}" "${log_root}" -maxdepth 4 -type f \( -name '*.log' -o -name 'stdout' -o -name 'nohup.out' -o -name 'slurm-*.out' \) 2>/dev/null || true)
 done
 
-for state_file in "${STATE_DIR}"/*.state; do
-  [[ -e "${state_file}" ]] || break
-  pid="$(basename "${state_file}" .state)"
-  previous_step="$(read_state_step "${pid}")"
-  if ((any_log_progress == 1)); then
-    write_state "${pid}" "${previous_step}"
-  fi
-done
-
 gpu_active="$(recent_gpu_activity)"
 stall_suspected=0
-if ((training_processes > 0)) && ((gpu_active > 0)) && ((total_recent_checkpoints == 0)) && ((any_log_progress == 0)); then
+if ((training_processes > 0)) && ((gpu_active > 0)) && ((total_recent_checkpoints == 0)) && ((any_log_progress == 0)) && ((any_recent_log_update == 0)); then
   stall_suspected=1
 fi
 emit_metric "nixl_job_stall_suspected" "${stall_suspected}"

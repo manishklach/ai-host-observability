@@ -50,3 +50,27 @@ teardown() {
   [[ -f "${out_dir}/nixl_job.prom" ]]
   grep -Fq 'nixl_job_training_processes_total 1' "${out_dir}/nixl_job.prom"
 }
+
+@test "nixl_job only suspects stall after sustained missing checkpoint and log progress" {
+  out_dir="${TEST_TMPDIR}/job-stall-prom"
+  checkpoint_dir="${TEST_TMPDIR}/job-stall-checkpoints"
+  log_dir="${TEST_TMPDIR}/job-stall-logs"
+  state_dir="${TEST_TMPDIR}/job-stall-state"
+  mkdir -p "${out_dir}" "${checkpoint_dir}" "${log_dir}" "${state_dir}"
+  cp "${FIXTURE_DIR}/prom-input/gpu.prom" "${out_dir}/gpu.prom"
+
+  log_file="${log_dir}/train.log"
+  printf 'epoch 1\nstep 42\n' >"${log_file}"
+  first_now="$(date +%s)"
+  touch -d "@${first_now}" "${log_file}"
+
+  run env OUT_DIR="${out_dir}" STATE_DIR="${state_dir}" PS_CMD="${FIXTURE_DIR}/bin/ps-training" CHECKPOINT_DIRS="${checkpoint_dir}" LOG_DIRS="${log_dir}" STALL_THRESHOLD_SECONDS=600 NOW_EPOCH="${first_now}" bash "${ROOT_DIR}/scripts/job-heartbeat-exporter.sh"
+  [[ "${status}" -eq 0 ]]
+  [[ "${output}" == *'nixl_job_stall_suspected 0 '* ]]
+
+  second_now=$((first_now + 900))
+  touch -d "@${first_now}" "${log_file}"
+  run env OUT_DIR="${out_dir}" STATE_DIR="${state_dir}" PS_CMD="${FIXTURE_DIR}/bin/ps-training" CHECKPOINT_DIRS="${checkpoint_dir}" LOG_DIRS="${log_dir}" STALL_THRESHOLD_SECONDS=600 NOW_EPOCH="${second_now}" bash "${ROOT_DIR}/scripts/job-heartbeat-exporter.sh"
+  [[ "${status}" -eq 0 ]]
+  [[ "${output}" == *'nixl_job_stall_suspected 1 '* ]]
+}

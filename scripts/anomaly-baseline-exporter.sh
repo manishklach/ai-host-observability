@@ -110,9 +110,8 @@ compute_metric_current() {
     raw="$(aggregate_values "nixl_infiniband_counter" 'counter="port_rcv_errors"' "sum")"
     [[ -n "${raw}" ]] && counter_proxy_value "${metric_id}" "${raw}" || printf '0\n'
     ;;
-  cpu_iowait_rate)
-    raw="$(aggregate_values "nixl_cpu_time_seconds_total" 'mode="iowait"' "sum")"
-    [[ -n "${raw}" ]] && counter_proxy_value "${metric_id}" "${raw}" || printf '0\n'
+  cpu_psi_some_60)
+    read_last_value "nixl_cpu_psi_avg" 'scope="some",window="60s"'
     ;;
   esac
 }
@@ -203,7 +202,7 @@ metric_ids=(
   disk_io_time_rate
   softnet_drops
   ib_rcv_errors
-  cpu_iowait_rate
+  cpu_psi_some_60
 )
 
 for metric_id in "${metric_ids[@]}"; do

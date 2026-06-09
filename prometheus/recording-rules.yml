@@ -29,8 +29,11 @@ groups:
       - record: nixl:memory:psi_p95_24h
         expr: quantile_over_time(0.95, nixl_host_memory_psi_avg{scope="some",window="60s"}[24h:1m])
 
-      - record: nixl:nvme:percentage_used_max
-        expr: max by (device, model, serial) (nixl_nvme_percentage_used)
+      - record: nixl:filesystem:usage_percent
+        expr: 100 * nixl_filesystem_bytes{field="used"} / ignoring(field) clamp_min(nixl_filesystem_bytes{field="size"}, 1)
+
+      - record: nixl:filesystem:usage_percent_max
+        expr: max by (filesystem, mount, fstype) (nixl:filesystem:usage_percent)
 
       - record: nixl:gpu:ecc_errors_daily
         expr: increase(nixl_gpu_ecc_volatile_total[24h])
@@ -42,13 +45,13 @@ groups:
     interval: 1m
     rules:
       - record: nixl:gpu:available
-        expr: min by (index, uuid) (nixl_gpu_pstate{pstate="P0"} * (1 - nixl_gpu_throttle_reason{reason="hw_slowdown"}))
+        expr: max by (index, uuid) ((nixl_gpu_pstate{pstate="P0"} == bool 1) * on(index, uuid) (1 - nixl_gpu_throttle_reason{reason="hw_slowdown"}))
 
       - record: nixl:storage:healthy
-        expr: min by (device) (nixl_nvme_available_spare_percent > bool 20)
+        expr: min by (filesystem, mount, fstype) ((nixl_filesystem_bytes{field="avail"} / ignoring(field) clamp_min(nixl_filesystem_bytes{field="size"}, 1)) > bool 0.10)
 
       - record: nixl:fabric:healthy
-        expr: min by (device, port) (nixl_ib_port_state{state="ACTIVE"} * (1 - bool(rate(nixl_infiniband_counter{counter="port_rcv_errors"}[5m]) > 0)))
+        expr: min by (device, port) ((nixl_infiniband_port_state == bool 4) * on(device, port) (rate(nixl_infiniband_counter{counter="port_rcv_errors"}[5m]) == bool 0))
 
       - record: nixl:host:health_score
         expr: (avg(nixl:gpu:available) + avg(nixl:storage:healthy) + avg(nixl:fabric:healthy)) / 3
