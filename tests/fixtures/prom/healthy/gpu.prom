@@ -1,0 +1,18 @@
+# HELP nixl_gpu_memory_used_bytes GPU memory used in bytes.
+# TYPE nixl_gpu_memory_used_bytes gauge
+nixl_gpu_memory_used_bytes{vendor="nvidia",index="0",uuid="GPU-123"} 17179869184
+# HELP nixl_gpu_bar1_used_bytes GPU BAR1 usage.
+# TYPE nixl_gpu_bar1_used_bytes gauge
+nixl_gpu_bar1_used_bytes{vendor="nvidia",index="0",uuid="GPU-123"} 268435456
+# HELP nixl_gpu_bar1_total_bytes GPU BAR1 total.
+# TYPE nixl_gpu_bar1_total_bytes gauge
+nixl_gpu_bar1_total_bytes{vendor="nvidia",index="0",uuid="GPU-123"} 1073741824
+# HELP nixl_gpu_ecc_volatile_total GPU ECC error count.
+# TYPE nixl_gpu_ecc_volatile_total counter
+nixl_gpu_ecc_volatile_total{vendor="nvidia",index="0",uuid="GPU-123"} 0
+# HELP nixl_gpu_pstate GPU pstate.
+# TYPE nixl_gpu_pstate gauge
+nixl_gpu_pstate{index="0",uuid="GPU-123",pstate="P0"} 1
+# HELP nixl_gpu_throttle_reason GPU throttle flags.
+# TYPE nixl_gpu_throttle_reason gauge
+nixl_gpu_throttle_reason{index="0",uuid="GPU-123",reason="hw_slowdown"} 0

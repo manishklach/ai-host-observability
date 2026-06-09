@@ -1,0 +1,12 @@
+# HELP nixl_host_meminfo_bytes Host memory fields in bytes.
+# TYPE nixl_host_meminfo_bytes gauge
+nixl_host_meminfo_bytes{field="memavailable"} 6442450944
+# HELP nixl_host_fw_pages_sum Sum of mlx5 firmware pages.
+# TYPE nixl_host_fw_pages_sum gauge
+nixl_host_fw_pages_sum 18000
+# HELP nixl_baseline_zscore Local z-score.
+# TYPE nixl_baseline_zscore gauge
+nixl_baseline_zscore{metric_id="fw_pages_sum"} 2.8
+# HELP nixl_infiniband_counter IB counters.
+# TYPE nixl_infiniband_counter counter
+nixl_infiniband_counter{device="mlx5_0",port="1",counter="port_rcv_errors"} 4

@@ -1,0 +1,7 @@
+# HELP nixl_kernel_log_pattern_total Kernel log pattern counters.
+# TYPE nixl_kernel_log_pattern_total counter
+nixl_kernel_log_pattern_total{pattern="oom"} 2
+nixl_kernel_log_pattern_total{pattern="pcie_aer"} 1
+nixl_kernel_log_pattern_total{pattern="vfio"} 1
+nixl_kernel_log_pattern_total{pattern="iommu_dma"} 1
+nixl_kernel_log_pattern_total{pattern="rdma_mlx5"} 1

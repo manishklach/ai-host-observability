@@ -3,13 +3,37 @@
 [![CI](https://github.com/manishklach/ai-host-observability/actions/workflows/ci.yml/badge.svg)](https://github.com/manishklach/ai-host-observability/actions/workflows/ci.yml)
 [![Grafana Dashboard](https://img.shields.io/badge/Grafana-dashboard-F46800?logo=grafana&logoColor=white)](grafana/ai-host-overview.json)
 
-Prometheus-friendly Linux host observability for AI and GPU infrastructure, built for the pressure signals that show up between the GPU, NIC, PCIe, VFIO, and the host kernel.
+AI Host Observability is a Linux-first triage and Prometheus toolkit for GPU and RDMA servers, designed to catch hidden host pressure before it turns into GPU stalls, OOMs, RDMA failures, PCIe noise, or tail-latency incidents.
 
 AI and GPU servers often fail on the host side before the GPU looks unhealthy. Hidden pressure can build in memory reclaim, PSI, RDMA registration footprint, IRQ load, BAR1 usage, cgroup growth, or kernel log patterns while GPU HBM still looks fine.
 
 This repo focuses on that seam layer: the host-side failure modes that DCGM and generic `node_exporter` setups do not always emphasize out of the box. For the positioning and tradeoffs, see [Why not just use DCGM or node_exporter?](docs/why-not-dcgm-or-node-exporter.md).
 
 It is intentionally lightweight: shell collectors, systemd scheduling, Prometheus textfile output, and docs that help operators debug the host side before they end up blaming the GPU for the wrong problem.
+
+## Quick AI Host Triage
+
+```bash
+sudo make install
+OUT_DIR=/var/lib/node_exporter/textfile_collector bash scripts/collect-all.sh
+OUT_DIR=/var/lib/node_exporter/textfile_collector bash scripts/ai-host-triage.sh
+```
+
+Example output:
+
+```text
+AI Host Triage Summary
+======================
+
+Host memory:
+  MemAvailable: 2.00 GiB [CRITICAL]
+
+PSI / reclaim / swap:
+  Memory PSI some avg60: 7.5% [CRITICAL]
+
+Likely diagnosis:
+  Hidden host memory pressure is building. MemAvailable is low while memory PSI is elevated.
+```
 
 ## Collection Architecture
 
@@ -192,6 +216,7 @@ More realistic textfile examples live in [examples/sample-output](examples/sampl
 ## Documentation
 
 - [Metrics contract](docs/metrics.md)
+- [AI host golden signals](docs/ai-host-golden-signals.md)
 - [Operations guide](docs/ops-guide.md)
 - [Runbooks](docs/runbooks)
 - [Incident demo: GPU looks fine, host is dying](docs/demos/host-oom-before-gpu-oom.md)

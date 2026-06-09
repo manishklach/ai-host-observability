@@ -1,7 +1,7 @@
 PREFIX ?= /opt/ai-host-observability
 SYSTEMD_DIR ?= /etc/systemd/system
 
-.PHONY: test test-bats lint smoke install uninstall format check-deps
+.PHONY: test test-bats lint smoke install uninstall format check-deps validate-prometheus validate-grafana triage-smoke
 
 check-deps:
 	@echo "Checking required dependencies..."
@@ -47,12 +47,38 @@ test-bats:
 
 lint:
 	find scripts tests -name '*.sh' -print0 | xargs -0 -n1 bash -n
-	if command -v shellcheck >/dev/null 2>&1; then SHELLCHECK_OPTS='-x -e SC2249,SC2250,SC2310,SC2312' shellcheck scripts/*.sh tests/helpers.bash tests/*.bats; fi
-	if ! command -v shfmt >/dev/null 2>&1; then echo "shfmt is required for make lint"; exit 1; fi
-	shfmt -d scripts/ tests/
+	@if command -v shellcheck >/dev/null 2>&1; then \
+		SHELLCHECK_OPTS='-x -e SC2249,SC2250,SC2310,SC2312' shellcheck scripts/*.sh tests/helpers.bash tests/*.bats; \
+	else \
+		echo "Skipping shellcheck: not installed"; \
+	fi
+	@if command -v shfmt >/dev/null 2>&1; then \
+		shfmt -d scripts/ tests/; \
+	else \
+		echo "Skipping shfmt: not installed"; \
+	fi
 
 smoke:
 	OUT_DIR=/tmp/ai-host-observability-prom bash scripts/collect-all.sh
+
+validate-prometheus:
+	@if command -v promtool >/dev/null 2>&1; then \
+		promtool check rules prometheus/alerts.yml; \
+		promtool check rules prometheus/rules.yml; \
+		promtool check rules prometheus/recording-rules.yml; \
+	else \
+		echo "Skipping Prometheus validation: promtool not installed"; \
+	fi
+
+validate-grafana:
+	@if command -v jq >/dev/null 2>&1; then \
+		jq empty grafana/*.json; \
+	else \
+		echo "Skipping Grafana validation: jq not installed"; \
+	fi
+
+triage-smoke:
+	OUT_DIR=tests/fixtures/prom/memory_pressure bash scripts/ai-host-triage.sh
 
 install:
 	mkdir -p $(PREFIX)

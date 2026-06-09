@@ -79,6 +79,24 @@ make test-bats
 
 `make test-bats` is now a live target, and `make test` runs `make lint` plus the Bats suite.
 
+Validate Prometheus rules when `promtool` is installed:
+
+```bash
+make validate-prometheus
+```
+
+Validate Grafana dashboards when `jq` is installed:
+
+```bash
+make validate-grafana
+```
+
+Smoke-test the operator-facing triage summary:
+
+```bash
+make triage-smoke
+```
+
 If `bats` is not installed locally, install it first:
 
 ```bash

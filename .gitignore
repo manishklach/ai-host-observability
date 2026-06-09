@@ -2,6 +2,7 @@
 *.prom
 !examples/sample-output/*.prom
 !tests/fixtures/prom-input/*.prom
+!tests/fixtures/prom/**/*.prom
 *.tmp
 *.swp
 .idea/

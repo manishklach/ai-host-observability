@@ -1,0 +1,3 @@
+# HELP nixl_host_meminfo_bytes Host memory fields in bytes.
+# TYPE nixl_host_meminfo_bytes gauge
+nixl_host_meminfo_bytes{field="memavailable"} 12884901888

@@ -6,6 +6,7 @@ groups:
         for: 5m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: Host memory PSI has stayed elevated.
           description: Full memory PSI over the 60 second window has remained above 0.1 for five minutes, which usually means the host is stalling on memory reclaim or direct allocation pressure. Check MemAvailable, reclaim counters, cgroup growth, and whether RDMA registration or pinned memory is expanding.
@@ -16,6 +17,7 @@ groups:
         for: 2m
         labels:
           severity: critical
+          component: ai_host
         annotations:
           summary: Host memory PSI is at a critical level.
           description: Full memory PSI over the 60 second window has exceeded 0.3 for two minutes, which usually means the host is spending a large fraction of wall time stalled on memory pressure. Check cgroup OOM activity, MemAvailable collapse, reclaim spikes, and whether the node is heading toward a host OOM or severe tail latency.
@@ -26,6 +28,7 @@ groups:
         for: 0m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: RDMA firmware page usage is growing.
           description: The summed mlx5 firmware page footprint has increased over the last fifteen minutes, which can indicate rising host-side registration pressure even when GPU dashboards still look healthy. Check multi-HCA fan-out, buffer registration behavior, and whether host memory pressure is growing in parallel.
@@ -36,6 +39,7 @@ groups:
         for: 3m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: GPU BAR1 usage is near full.
           description: BAR1 utilization has stayed above 90 percent for three minutes, which can signal host-GPU mapping pressure and transport-side strain around large working sets. Check BAR1 alongside pinned memory, GPU transfer paths, and whether the host is also showing reclaim or PCIe-side distress.
@@ -46,6 +50,7 @@ groups:
         for: 2m
         labels:
           severity: critical
+          component: ai_host
         annotations:
           summary: Kernel OOM activity has been detected.
           description: Kernel log OOM pattern counters are increasing over the last five minutes, which means the node is already recording OOM behavior rather than only trending toward it. Check killed processes, cgroup memory events, reclaim counters, and whether RDMA registration, pinned memory, or runaway processes are consuming host RAM.
@@ -56,6 +61,7 @@ groups:
         for: 5m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: Host receive drops are increasing.
           description: Softnet dropped counters are rising faster than ten events per second over five minutes, which usually means the host networking path is falling behind. Check CPU softirq load, IRQ affinity, ethtool drop counters, queue pressure, and whether RDMA or bulk ingress traffic is saturating the node.
@@ -66,6 +72,7 @@ groups:
         for: 0m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: GPU ECC errors were detected.
           description: Volatile GPU ECC error counters increased during the last ten minutes, which may indicate a memory integrity issue on one or more GPUs. Check the affected GPU index, recent workloads, thermal conditions, and whether driver or hardware logs show correlated faults.
@@ -76,6 +83,7 @@ groups:
         for: 3m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: An ai-host-observability exporter is not completing successfully.
           description: The wrapper has reported one or more exporters in a failed state for at least three minutes. Check the exporter name, recent deployment or permission changes, missing host paths or vendor tools, and whether the textfile collector directory is writable.
@@ -86,6 +94,7 @@ groups:
         for: 0m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: Correctable EDAC memory errors are accumulating.
           description: More than ten correctable EDAC errors were recorded during the last hour for at least one memory controller channel. This usually means DIMM degradation is in progress and should be treated as an early hardware warning before it turns into an uncorrectable error or a host crash.
@@ -96,6 +105,7 @@ groups:
         for: 0m
         labels:
           severity: critical
+          component: ai_host
         annotations:
           summary: Uncorrectable EDAC memory errors were detected.
           description: An uncorrectable EDAC memory error has occurred within the last ten minutes. This is a data-integrity event, not just a pressure signal, and should be handled as potential corruption risk for running training or inference workloads.
@@ -106,6 +116,7 @@ groups:
         for: 2m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: CPU thermal throttling is occurring.
           description: CPU core or package throttle counters are increasing, which means the host is thermal-throttling under load. Training jobs can show non-deterministic throughput cliffs or tail latency when the package repeatedly hits thermal limits.
@@ -116,6 +127,7 @@ groups:
         for: 5m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: CPU packages are sustaining frequencies below rated maximum.
           description: The mean package frequency has remained below 85 percent of the rated maximum for five minutes. Check cooling, BIOS power limits, cgroup CPU limits, and whether thermal throttling or package power caps are suppressing performance.
@@ -126,6 +138,7 @@ groups:
         for: 1m
         labels:
           severity: critical
+          component: ai_host
         annotations:
           summary: An NVLink is down.
           description: One or more NVLink links are not active. Multi-GPU collectives can hang or lose throughput sharply when a link is unavailable, especially on topologies that expect a full fabric.
@@ -136,6 +149,7 @@ groups:
         for: 5m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: NVLink errors are increasing.
           description: NVLink replay, recovery, or CRC errors are accumulating over time, which is often a pre-failure fabric signal even if GPU memory and utilization still look normal. Check XID events, thermals, seating, and recent topology changes.
@@ -146,6 +160,7 @@ groups:
         for: 2m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: 2MB hugepage pool is exhausted.
           description: The 2MB hugepage pool is fully allocated while the host still expects that page size to be available. New RDMA registrations, pinned buffers, or GPU BAR mappings may fall back to small pages and show unstable performance.
@@ -156,6 +171,7 @@ groups:
         for: 5m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: Transparent hugepage fallback rate is high.
           description: More than twenty percent of transparent hugepage allocation attempts are falling back to small pages. This can create unstable memory performance and higher CPU overhead for registration-heavy GPU and RDMA workloads.
@@ -166,6 +182,7 @@ groups:
         for: 0m
         labels:
           severity: critical
+          component: ai_host
         annotations:
           summary: Kernel soft lockup detected.
           description: The kernel log contains soft lockup events, which means one or more CPUs spent excessive time stuck without scheduling normally. The host may already be partially unresponsive or heading toward a panic path.
@@ -176,6 +193,7 @@ groups:
         for: 0m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: Kernel hung task detected.
           description: The kernel log is reporting blocked or hung tasks. This often precedes broader stalls in storage, filesystems, or driver paths and should be investigated before the host becomes unusable.
@@ -186,6 +204,7 @@ groups:
         for: 0m
         labels:
           severity: critical
+          component: ai_host
         annotations:
           summary: RCU stall detected.
           description: The kernel has logged an RCU stall, which points to severe scheduling starvation, runaway interrupt load, or a CPU that is no longer making forward progress.
@@ -196,6 +215,7 @@ groups:
         for: 5m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: System clock is not synchronised.
           description: The host is not reporting an NTP-synchronised clock. Multi-node checkpoints, timeout correlation, and transport diagnostics may all become less trustworthy when timestamps drift.
@@ -206,6 +226,7 @@ groups:
         for: 5m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: Clock offset is above 10ms.
           description: The measured clock offset has stayed above 10 milliseconds for five minutes. On distributed GPU jobs this can create misleading timeout behaviour and poor cross-node log correlation.
@@ -216,6 +237,7 @@ groups:
         for: 10m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: Clock stratum is higher than expected.
           description: The host is several hops away from a reliable time source. That usually indicates degraded NTP quality and increases the risk of drift over longer training jobs.
@@ -226,6 +248,7 @@ groups:
         for: 1m
         labels:
           severity: critical
+          component: ai_host
         annotations:
           summary: GPU hardware slowdown is active.
           description: The GPU is reporting a hardware slowdown reason, which usually means a severe thermal or power-protection path is active. Performance will be materially degraded and the host should be treated as unreliable for steady training throughput.
@@ -236,6 +259,7 @@ groups:
         for: 3m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: GPU is throttling on software power cap.
           description: The GPU is being limited by a configured software power cap. If this is unexpected, review the enforced power limit and whether the node was intentionally derated.
@@ -246,6 +270,7 @@ groups:
         for: 5m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: GPU is not in maximum-performance P-state.
           description: The GPU has remained outside P0 for five minutes. During active training windows this often means the device is throttled, under-driven, or otherwise not reaching its intended performance state.
@@ -256,6 +281,7 @@ groups:
         for: 5m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: GPU SM clocks are materially below maximum.
           description: The GPU SM clock has stayed more than ten percent below the rated maximum. Check throttle reasons, enforced power limits, thermals, and whether application clocks were intentionally constrained.
@@ -266,6 +292,7 @@ groups:
         for: 3m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: A baseline-tracked metric is far above its recent norm.
           description: >-
@@ -280,6 +307,7 @@ groups:
         for: 5m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: A baseline-tracked metric is above its recent p99.
           description: >-
@@ -294,6 +322,7 @@ groups:
         for: 10m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: A training job appears stalled.
           description: >-
@@ -307,6 +336,7 @@ groups:
         for: 0m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: Training checkpoints have stopped refreshing.
           description: >-
@@ -320,6 +350,7 @@ groups:
         for: 5m
         labels:
           severity: critical
+          component: ai_host
         annotations:
           summary: GPU activity is present without a visible training process.
           description: >-
@@ -334,6 +365,7 @@ groups:
         for: 3m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: A host interface is close to saturation.
           description: >-
@@ -347,6 +379,7 @@ groups:
         for: 5m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: TCP retransmit pressure is high.
           description: >-
@@ -360,6 +393,7 @@ groups:
         for: 0m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: An exporter textfile is stale.
           description: >-
@@ -373,6 +407,7 @@ groups:
         for: 5m
         labels:
           severity: critical
+          component: ai_host
         annotations:
           summary: node_exporter is not visible on the host.
           description: >-
@@ -386,6 +421,7 @@ groups:
         for: 5m
         labels:
           severity: critical
+          component: ai_host
         annotations:
           summary: More than half of exporter outputs are stale.
           description: >-
@@ -399,6 +435,7 @@ groups:
         for: 5m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: GPU memory fragmentation is elevated.
           description: >-
@@ -412,6 +449,7 @@ groups:
         for: 0m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: A GPU has pages pending retirement.
           description: >-
@@ -425,6 +463,7 @@ groups:
         for: 0m
         labels:
           severity: critical
+          component: ai_host
         annotations:
           summary: A GPU has rows pending remap.
           description: >-
@@ -437,6 +476,7 @@ groups:
         for: 5m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: GPU memory is close to exhaustion.
           description: >-
@@ -450,6 +490,7 @@ groups:
         for: 0m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: Perf and profiling access is too restricted.
           description: >-
@@ -463,6 +504,7 @@ groups:
         for: 0m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: Socket receive buffers are smaller than recommended.
           description: >-
@@ -475,6 +517,7 @@ groups:
         for: 0m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: NUMA balancing is enabled on the host.
           description: >-
@@ -487,6 +530,7 @@ groups:
         for: 0m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: Zone reclaim mode is enabled.
           description: >-
@@ -499,6 +543,7 @@ groups:
         for: 0m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: memlock ulimit is too low for large pinned-memory workloads.
           description: >-
@@ -511,6 +556,7 @@ groups:
         for: 5m
         labels:
           severity: warning
+          component: ai_host
         annotations:
           summary: Composite host health score is low.
           description: >-

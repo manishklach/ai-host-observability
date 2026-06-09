@@ -1,0 +1,13 @@
+# HELP nixl_host_meminfo_bytes Host memory fields in bytes.
+# TYPE nixl_host_meminfo_bytes gauge
+nixl_host_meminfo_bytes{field="memavailable"} 2147483648
+nixl_host_meminfo_bytes{field="memfree"} 536870912
+nixl_host_meminfo_bytes{field="swapfree"} 1073741824
+# HELP nixl_host_memory_psi_avg Memory PSI.
+# TYPE nixl_host_memory_psi_avg gauge
+nixl_host_memory_psi_avg{scope="some",window="60s"} 7.5
+nixl_host_memory_psi_avg{scope="full",window="60s"} 0.42
+# HELP nixl_host_vmstat VM pressure counters.
+# TYPE nixl_host_vmstat counter
+nixl_host_vmstat{field="pgscan_direct"} 320
+nixl_host_vmstat{field="pswpout"} 64
