@@ -86,34 +86,34 @@ counter_proxy_value() {
 compute_metric_current() {
   local metric_id="$1"
   case "${metric_id}" in
-    psi_mem_some_60)
-      read_last_value "nixl_host_memory_psi_avg" 'scope="some",window="60s"'
-      ;;
-    fw_pages_sum)
-      read_last_value "nixl_host_fw_pages_sum"
-      ;;
-    gpu_util_mean)
-      aggregate_values "nixl_gpu_utilization_percent" "" "mean"
-      ;;
-    gpu_temp_max)
-      aggregate_values "nixl_gpu_temperature_celsius" "" "max"
-      ;;
-    disk_io_time_rate)
-      raw="$(aggregate_values "nixl_diskstat_total" 'field="ms_io"' "sum")"
-      [[ -n "${raw}" ]] && counter_proxy_value "${metric_id}" "${raw}" || printf '0\n'
-      ;;
-    softnet_drops)
-      raw="$(aggregate_values "nixl_softnet_stat_total" 'field="dropped"' "sum")"
-      [[ -n "${raw}" ]] && counter_proxy_value "${metric_id}" "${raw}" || printf '0\n'
-      ;;
-    ib_rcv_errors)
-      raw="$(aggregate_values "nixl_infiniband_counter" 'counter="port_rcv_errors"' "sum")"
-      [[ -n "${raw}" ]] && counter_proxy_value "${metric_id}" "${raw}" || printf '0\n'
-      ;;
-    cpu_iowait_rate)
-      raw="$(aggregate_values "nixl_cpu_time_seconds_total" 'mode="iowait"' "sum")"
-      [[ -n "${raw}" ]] && counter_proxy_value "${metric_id}" "${raw}" || printf '0\n'
-      ;;
+  psi_mem_some_60)
+    read_last_value "nixl_host_memory_psi_avg" 'scope="some",window="60s"'
+    ;;
+  fw_pages_sum)
+    read_last_value "nixl_host_fw_pages_sum"
+    ;;
+  gpu_util_mean)
+    aggregate_values "nixl_gpu_utilization_percent" "" "mean"
+    ;;
+  gpu_temp_max)
+    aggregate_values "nixl_gpu_temperature_celsius" "" "max"
+    ;;
+  disk_io_time_rate)
+    raw="$(aggregate_values "nixl_diskstat_total" 'field="ms_io"' "sum")"
+    [[ -n "${raw}" ]] && counter_proxy_value "${metric_id}" "${raw}" || printf '0\n'
+    ;;
+  softnet_drops)
+    raw="$(aggregate_values "nixl_softnet_stat_total" 'field="dropped"' "sum")"
+    [[ -n "${raw}" ]] && counter_proxy_value "${metric_id}" "${raw}" || printf '0\n'
+    ;;
+  ib_rcv_errors)
+    raw="$(aggregate_values "nixl_infiniband_counter" 'counter="port_rcv_errors"' "sum")"
+    [[ -n "${raw}" ]] && counter_proxy_value "${metric_id}" "${raw}" || printf '0\n'
+    ;;
+  cpu_iowait_rate)
+    raw="$(aggregate_values "nixl_cpu_time_seconds_total" 'mode="iowait"' "sum")"
+    [[ -n "${raw}" ]] && counter_proxy_value "${metric_id}" "${raw}" || printf '0\n'
+    ;;
   esac
 }
 
