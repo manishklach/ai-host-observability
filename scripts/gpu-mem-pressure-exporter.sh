@@ -90,7 +90,7 @@ while IFS=',' read -r gpu_uuid pid used_gpu_memory process_name; do
   index="${gpu_index_by_uuid["${gpu_uuid}"]:-}"
   if [[ -n "${index}" ]] && is_integer "${pid}" && is_number "${used_gpu_memory}"; then
     emit_metric "nixl_gpu_process_memory_bytes" "$(to_bytes_from_mib "${used_gpu_memory}")" "index=${index}" "uuid=${gpu_uuid}" "pid=${pid}" "process_name=${process_name}"
-    gpu_process_count["${gpu_uuid}"]=$(( ${gpu_process_count["${gpu_uuid}"]:-0} + 1 ))
+    gpu_process_count["${gpu_uuid}"]=$((${gpu_process_count["${gpu_uuid}"]:-0} + 1))
   fi
 done < <("${NVIDIA_SMI}" --query-compute-apps=gpu_uuid,pid,used_gpu_memory,process_name --format=csv,noheader,nounits 2>/dev/null || true)
 
