@@ -20,7 +20,7 @@ emit_ulimit_metric() {
   local value
   value="$(bash -lc "ulimit ${mode_flag}" 2>/dev/null || true)"
   case "${value}" in
-    unlimited) value="-1" ;;
+  unlimited) value="-1" ;;
   esac
   is_integer "${value}" && emit_metric "nixl_host_ulimit" "${value}" "resource=${resource_name}" "type=${type}"
 }
@@ -31,12 +31,12 @@ read_sysctl_value() {
   local value
   value="$(safe_read_file "${path}" || true)"
   case "${name}" in
-    net.ipv4.tcp_rmem|net.ipv4.tcp_wmem)
-      awk '{ print $NF }' <<<"${value}"
-      ;;
-    *)
-      printf '%s\n' "${value}"
-      ;;
+  net.ipv4.tcp_rmem | net.ipv4.tcp_wmem)
+    awk '{ print $NF }' <<<"${value}"
+    ;;
+  *)
+    printf '%s\n' "${value}"
+    ;;
   esac
 }
 

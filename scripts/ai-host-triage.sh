@@ -20,23 +20,23 @@ EOF
 
 while (($# > 0)); do
   case "$1" in
-    --prom-dir)
-      shift
-      [[ $# -gt 0 ]] || {
-        printf 'error: --prom-dir requires a path\n' >&2
-        exit 2
-      }
-      OUT_DIR="$1"
-      ;;
-    --help|-h)
-      usage
-      exit 0
-      ;;
-    *)
-      printf 'error: unknown argument: %s\n' "$1" >&2
-      usage >&2
+  --prom-dir)
+    shift
+    [[ $# -gt 0 ]] || {
+      printf 'error: --prom-dir requires a path\n' >&2
       exit 2
-      ;;
+    }
+    OUT_DIR="$1"
+    ;;
+  --help|-h)
+    usage
+    exit 0
+    ;;
+  *)
+    printf 'error: unknown argument: %s\n' "$1" >&2
+    usage >&2
+    exit 2
+    ;;
   esac
   shift
 done
