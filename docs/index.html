@@ -188,6 +188,7 @@
       <div class="actions">
         <a class="button primary" href="https://github.com/manishklach/ai-host-observability" target="_blank" rel="noreferrer">View GitHub Repository</a>
         <a class="button" href="https://manishklach.github.io/writings/nixl-nccl-ucx-what-each-does-host-memory-blows-up-first.html" target="_blank" rel="noreferrer">Read Detailed Blog Post</a>
+        <a class="button" href="https://github.com/manishklach/ai-host-observability/blob/main/docs/demos/host-oom-before-gpu-oom.md" target="_blank" rel="noreferrer">Read Incident Walkthrough</a>
       </div>
     </section>
 
@@ -203,6 +204,16 @@
           <h3>Detailed Blog Post</h3>
           <p>A long-form explainer on NIXL, NCCL, and UCX, including why host memory can fail before GPU memory looks unhealthy.</p>
           <p><a href="https://manishklach.github.io/writings/nixl-nccl-ucx-what-each-does-host-memory-blows-up-first.html" target="_blank" rel="noreferrer">manishklach.github.io/writings/nixl-nccl-ucx-what-each-does-host-memory-blows-up-first.html</a></p>
+        </div>
+        <div class="card">
+          <h3>Incident Demo</h3>
+          <p>A practical walkthrough for the failure mode where GPUs still look productive while the Linux host is sliding toward OOM.</p>
+          <p><a href="https://github.com/manishklach/ai-host-observability/blob/main/docs/demos/host-oom-before-gpu-oom.md" target="_blank" rel="noreferrer">docs/demos/host-oom-before-gpu-oom.md</a></p>
+        </div>
+        <div class="card">
+          <h3>Why This Layer Exists</h3>
+          <p>A short positioning note on how this repo complements DCGM and <code>node_exporter</code> instead of replacing them.</p>
+          <p><a href="https://github.com/manishklach/ai-host-observability/blob/main/docs/why-not-dcgm-or-node-exporter.md" target="_blank" rel="noreferrer">docs/why-not-dcgm-or-node-exporter.md</a></p>
         </div>
       </div>
     </section>
@@ -229,6 +240,29 @@
           </ul>
         </div>
       </div>
+    </section>
+
+    <section class="section">
+      <h2>Recent Operator-Facing Updates</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Health Score Now Tracks Real Exported Inputs</h3>
+          <p>
+            The composite host health score is now built from metrics the repo actually emits: GPU availability, filesystem headroom, and InfiniBand port health. That makes the score more trustworthy during live incidents and easier to decompose back to raw signals.
+          </p>
+          <p><a href="https://github.com/manishklach/ai-host-observability/blob/main/docs/runbooks/HostHealthScoreLow.md" target="_blank" rel="noreferrer">See the health score runbook</a></p>
+        </div>
+        <div class="card">
+          <h3>Job Stall Detection Now Waits For Sustained No-Progress</h3>
+          <p>
+            Training stall suspicion no longer trips just because a single scrape sees no fresh checkpoint. The heartbeat exporter now tracks whether log progress actually advanced and only marks a stall after sustained missing checkpoint and log progress beyond the configured threshold.
+          </p>
+          <p><a href="https://github.com/manishklach/ai-host-observability/blob/main/docs/runbooks/TrainingJobStallSuspected.md" target="_blank" rel="noreferrer">See the stall runbook</a></p>
+        </div>
+      </div>
+      <p>
+        In practice, that means the public docs now match the live behavior more closely: the health score is based on real emitted metrics, and “job stalled” means forward progress stopped for long enough to matter operationally.
+      </p>
       <p class="footer">
         If GitHub Pages for this repo is configured to publish from <code>/docs</code> on <code>main</code>, this page should serve as the site root.
       </p>
