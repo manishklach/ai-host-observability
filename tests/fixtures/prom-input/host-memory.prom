@@ -1,0 +1,7 @@
+# HELP nixl_host_memory_psi_avg Memory PSI rolling averages from /proc/pressure/memory.
+# TYPE nixl_host_memory_psi_avg gauge
+nixl_host_memory_psi_avg{scope="some",window="60s"} 1.25
+nixl_host_memory_psi_avg{scope="full",window="60s"} 0.08
+# HELP nixl_host_fw_pages_sum Sum of mlx5 firmware pages across all visible devices.
+# TYPE nixl_host_fw_pages_sum gauge
+nixl_host_fw_pages_sum 4096

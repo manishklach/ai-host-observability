@@ -1,0 +1,8 @@
+# HELP nixl_gpu_utilization_percent GPU utilization percent.
+# TYPE nixl_gpu_utilization_percent gauge
+nixl_gpu_utilization_percent{vendor="nvidia",index="0",uuid="GPU-123"} 82
+nixl_gpu_utilization_percent{vendor="nvidia",index="1",uuid="GPU-456"} 74
+# HELP nixl_gpu_temperature_celsius GPU temperature in Celsius.
+# TYPE nixl_gpu_temperature_celsius gauge
+nixl_gpu_temperature_celsius{vendor="nvidia",index="0",uuid="GPU-123"} 69
+nixl_gpu_temperature_celsius{vendor="nvidia",index="1",uuid="GPU-456"} 73

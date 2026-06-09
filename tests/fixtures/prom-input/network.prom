@@ -1,0 +1,4 @@
+# HELP nixl_softnet_stat_total Selected /proc/net/softnet_stat counters per CPU.
+# TYPE nixl_softnet_stat_total counter
+nixl_softnet_stat_total{cpu="0",field="dropped"} 10
+nixl_softnet_stat_total{cpu="1",field="dropped"} 6

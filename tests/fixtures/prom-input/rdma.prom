@@ -1,0 +1,4 @@
+# HELP nixl_infiniband_counter Selected Infiniband hardware counters.
+# TYPE nixl_infiniband_counter counter
+nixl_infiniband_counter{device="mlx5_0",port="1",counter="port_rcv_errors"} 2
+nixl_infiniband_counter{device="mlx5_1",port="1",counter="port_rcv_errors"} 3

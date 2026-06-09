@@ -1,0 +1,4 @@
+# HELP nixl_cpu_time_seconds_total CPU time counters by mode.
+# TYPE nixl_cpu_time_seconds_total counter
+nixl_cpu_time_seconds_total{cpu="0",mode="iowait"} 4
+nixl_cpu_time_seconds_total{cpu="1",mode="iowait"} 6

@@ -1,0 +1,3 @@
+# HELP nixl_diskstat_total Selected /proc/diskstats counters.
+# TYPE nixl_diskstat_total counter
+nixl_diskstat_total{device="nvme0n1",field="ms_io"} 1200
