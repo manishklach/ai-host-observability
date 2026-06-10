@@ -130,6 +130,12 @@ assert_exporter_out_dir() {
 
 @test "nixl_disk direct fixture run emits Prometheus metrics" {
   assert_exporter_direct "disk-filesystem-exporter.sh" 'nixl_inode_nr{field="allocated"}'
+  run assert_metric_present 'nixl_diskstat_reads_completed_total{device="sda"}' "${TEST_TMPDIR}/disk-filesystem-exporter.sh.prom"
+  [[ "${status}" -eq 0 ]]
+  run assert_metric_present 'nixl_diskstat_io_time_ms_total{device="sda"}' "${TEST_TMPDIR}/disk-filesystem-exporter.sh.prom"
+  [[ "${status}" -eq 0 ]]
+  run assert_metric_present 'nixl_block_queue_depth{device="nvme0n1"}' "${TEST_TMPDIR}/disk-filesystem-exporter.sh.prom"
+  [[ "${status}" -eq 0 ]]
 }
 
 @test "nixl_disk missing proc path emits wrapper failure metric" {

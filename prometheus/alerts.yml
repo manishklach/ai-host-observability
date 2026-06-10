@@ -564,3 +564,46 @@ groups:
             indicating at least one of the GPU, storage, or fabric health layers
             is degraded enough to affect confidence in the node.
           runbook_url: docs/runbooks/HostHealthScoreLow.md
+
+      - alert: BlockIOLatencyHigh
+        expr: rate(nixl_diskstat_io_time_ms_total[5m]) / (rate(nixl_diskstat_reads_completed_total[5m]) + rate(nixl_diskstat_writes_completed_total[5m]) + 1) > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: ai_host
+        annotations:
+          summary: Block device latency proxy is high.
+          description: >-
+            Disk I/O time is rising faster than completed read and write operations,
+            which usually points to storage latency, queueing, or an unhealthy device
+            path. Check queue depth, in-flight I/O, filesystem pressure, and NVMe
+            health if available.
+          runbook_url: docs/runbooks/BlockIOLatencyHigh.md
+
+      - alert: BlockDeviceSaturated
+        expr: nixl_diskstat_io_in_progress > nixl_block_queue_depth * 0.9
+        for: 3m
+        labels:
+          severity: warning
+          component: ai_host
+        annotations:
+          summary: Block device queue is near saturation.
+          description: >-
+            In-flight I/O is above ninety percent of the device queue depth. Training
+            checkpoint writes, data loading, and container image paths may see sharp
+            tail latency while the queue stays full.
+          runbook_url: docs/runbooks/BlockDeviceSaturated.md
+
+      - alert: DiskWriteErrorsIncreasing
+        expr: rate(nixl_diskstat_writes_completed_total[5m]) == 0 and nixl_diskstat_io_in_progress > 0
+        for: 5m
+        labels:
+          severity: warning
+          component: ai_host
+        annotations:
+          summary: Disk writes appear stuck while I/O remains in flight.
+          description: >-
+            The device has in-flight I/O but completed writes are not increasing.
+            Treat this as a stuck-write symptom and inspect kernel logs, filesystem
+            state, and device health before assuming the application is idle.
+          runbook_url: docs/runbooks/DiskWriteErrorsIncreasing.md

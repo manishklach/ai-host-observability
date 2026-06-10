@@ -1101,6 +1101,94 @@ metric_relabel_configs:
 - When absent: diskstats unavailable
 - Interpretation: selected disk I/O counters
 
+### `nixl_diskstat_reads_completed_total`
+
+- Type: `counter`
+- Labels: `device`
+- Unit: operations
+- Source: `${PROC_ROOT}/diskstats`
+- When absent: diskstats unavailable or the device is not in the monitored block-device allowlist
+- Cardinality estimate: O(block devices)
+- Interpretation: completed read operations per block device
+- Example alert: `rate(nixl_diskstat_reads_completed_total[5m])`
+
+### `nixl_diskstat_writes_completed_total`
+
+- Type: `counter`
+- Labels: `device`
+- Unit: operations
+- Source: `${PROC_ROOT}/diskstats`
+- When absent: diskstats unavailable or the device is not in the monitored block-device allowlist
+- Cardinality estimate: O(block devices)
+- Interpretation: completed write operations per block device
+- Example alert: `rate(nixl_diskstat_writes_completed_total[5m]) == 0 and nixl_diskstat_io_in_progress > 0`
+
+### `nixl_diskstat_io_in_progress`
+
+- Type: `gauge`
+- Labels: `device`
+- Unit: requests
+- Source: `${PROC_ROOT}/diskstats`
+- When absent: diskstats unavailable or the device is not in the monitored block-device allowlist
+- Cardinality estimate: O(block devices)
+- Interpretation: current in-flight I/O requests per block device
+- Example alert: `nixl_diskstat_io_in_progress > nixl_block_queue_depth * 0.9`
+
+### `nixl_diskstat_io_time_ms_total`
+
+- Type: `counter`
+- Labels: `device`
+- Unit: milliseconds
+- Source: `${PROC_ROOT}/diskstats`
+- When absent: diskstats unavailable or the device is not in the monitored block-device allowlist
+- Cardinality estimate: O(block devices)
+- Interpretation: cumulative time the block device spent doing I/O
+- Example alert: `rate(nixl_diskstat_io_time_ms_total[5m]) / (rate(nixl_diskstat_reads_completed_total[5m]) + rate(nixl_diskstat_writes_completed_total[5m]) + 1) > 100`
+
+### `nixl_diskstat_*_total`
+
+- Type: `counter`
+- Labels: `device`
+- Unit: operations, sectors, or milliseconds depending on metric
+- Source: `${PROC_ROOT}/diskstats`
+- When absent: optional kernel fields are missing, diskstats is unavailable, or the device is not in the monitored block-device allowlist
+- Cardinality estimate: O(block devices)
+- Interpretation: full block-device read, write, discard, flush, and weighted I/O counters
+- Example alert: `rate(nixl_diskstat_weighted_io_time_ms_total[5m]) > 0`
+
+### `nixl_block_queue_depth`
+
+- Type: `gauge`
+- Labels: `device`
+- Unit: requests
+- Source: `${SYS_ROOT}/block/<device>/queue/nr_requests`
+- When absent: queue attribute unavailable for the device
+- Cardinality estimate: O(block devices)
+- Interpretation: configured block request queue depth
+- Example alert: `nixl_diskstat_io_in_progress > nixl_block_queue_depth * 0.9`
+
+### `nixl_block_scheduler_info`
+
+- Type: `gauge`
+- Labels: `device`, `scheduler`
+- Unit: constant `1`
+- Source: `${SYS_ROOT}/block/<device>/queue/scheduler`
+- When absent: scheduler attribute unavailable for the device
+- Cardinality estimate: O(block devices)
+- Interpretation: active block scheduler selected by the kernel
+- Example alert: inspect during storage triage
+
+### `nixl_block_*`
+
+- Type: `gauge`
+- Labels: `device`
+- Unit: bytes, counts, requests, or boolean depending on metric
+- Source: `${SYS_ROOT}/block/<device>/queue/*` and `${SYS_ROOT}/block/<device>/inflight`
+- When absent: the specific sysfs attribute is unavailable
+- Cardinality estimate: O(block devices)
+- Interpretation: block queue shape, sector size, discard support, scheduler, and in-flight read/write split
+- Example alert: `nixl_block_rotational == 1`
+
 ### `nixl_filesystem_bytes`
 
 - Type: `gauge`

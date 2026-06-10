@@ -48,9 +48,23 @@
 ## Filesystem and Disk
 
 - `nixl_diskstat_total{field="ms_io"}`
+- `nixl_diskstat_io_time_ms_total`
+- `nixl_diskstat_io_in_progress`
+- `nixl_diskstat_reads_completed_total`
+- `nixl_diskstat_writes_completed_total`
+- `nixl_block_queue_depth`
+- `nixl_block_scheduler_info`
 - `nixl_filesystem_bytes{field="avail"}`
 - `nixl_file_nr{field="allocated"}`
 - `nixl_inode_nr{field="allocated"}`
+
+Recommended PromQL:
+
+```promql
+rate(nixl_diskstat_io_time_ms_total[5m])
+nixl_diskstat_io_in_progress / nixl_block_queue_depth
+rate(nixl_diskstat_reads_completed_total[5m]) + rate(nixl_diskstat_writes_completed_total[5m])
+```
 
 ## Network Stack
 
