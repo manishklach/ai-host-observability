@@ -676,3 +676,43 @@ groups:
             Check drive cooling, adjacent GPU heat, chassis airflow, and whether
             the device is throttling or accumulating errors.
           runbook_url: docs/runbooks/NVMeTempHigh.md
+
+      - alert: RAIDArrayDegraded
+        expr: nixl_md_degraded == 1
+        for: 0m
+        labels:
+          severity: critical
+          component: ai_host
+        annotations:
+          summary: Software RAID array is degraded.
+          description: >-
+            One or more expected members are missing from a software RAID array.
+            Storage redundancy is reduced or gone, and checkpoint or dataset paths
+            on the array should be treated as at risk.
+          runbook_url: docs/runbooks/RAIDArrayDegraded.md
+
+      - alert: RAIDArrayFailed
+        expr: nixl_md_state == 0
+        for: 0m
+        labels:
+          severity: critical
+          component: ai_host
+        annotations:
+          summary: Software RAID array is not active.
+          description: >-
+            The md array is inactive or failed. Workloads using this path may see
+            I/O errors, stale checkpoints, or full job failure.
+          runbook_url: docs/runbooks/RAIDArrayFailed.md
+
+      - alert: LVMThinPoolFull
+        expr: nixl_lvm_thin_data_percent > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: ai_host
+        annotations:
+          summary: LVM thin pool data usage is high.
+          description: >-
+            A thin pool is above eighty-five percent data usage. If it fills, writes
+            can fail abruptly and dependent jobs can stall or crash.
+          runbook_url: docs/runbooks/LVMThinPoolFull.md

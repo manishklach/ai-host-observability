@@ -1265,6 +1265,38 @@ metric_relabel_configs:
 - Interpretation: NVMe lifetime traffic, command, power, busy-time, and reliability counters
 - Example alert: `increase(nixl_nvme_media_errors_total[1h]) > 0`
 
+### `nixl_raid_scrape_success`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `scripts/raid-lvm-exporter.sh`
+- When absent: exporter did not run
+- Cardinality estimate: 1
+- Interpretation: whether RAID/LVM collection completed
+
+### `nixl_md_*`
+
+- Type: `gauge` or `counter` depending on metric
+- Labels: `device`, optionally `level` or `action`
+- Unit: booleans, counts, bytes, KiB/s, or mismatch events
+- Source: `${PROC_ROOT}/mdstat` and `${SYS_ROOT}/block/md*/md/*`
+- When absent: no mdstat file or no md arrays
+- Cardinality estimate: O(md arrays)
+- Interpretation: md software RAID state, disk counts, size, sync action, sync speed, and mismatch count
+- Example alert: `nixl_md_degraded == 1`
+
+### `nixl_lvm_*`
+
+- Type: `gauge`
+- Labels: `vg`, `lv`
+- Unit: bytes or percent depending on metric
+- Source: `lvs --noheadings --units b --nosuffix`
+- When absent: `lvs` unavailable or no LVM volumes
+- Cardinality estimate: O(logical volumes)
+- Interpretation: LVM logical volume size and thin pool data/metadata usage
+- Example alert: `nixl_lvm_thin_data_percent > 85`
+
 ### `nixl_filesystem_bytes`
 
 - Type: `gauge`

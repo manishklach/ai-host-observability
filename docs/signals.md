@@ -61,6 +61,9 @@
 - `nixl_nvme_available_spare_percent`
 - `nixl_nvme_critical_warning`
 - `nixl_nvme_temperature_celsius{sensor="composite"}`
+- `nixl_md_degraded`
+- `nixl_md_sync_action`
+- `nixl_lvm_thin_data_percent`
 
 Recommended PromQL:
 
@@ -69,6 +72,8 @@ rate(nixl_diskstat_io_time_ms_total[5m])
 nixl_diskstat_io_in_progress / nixl_block_queue_depth
 rate(nixl_diskstat_reads_completed_total[5m]) + rate(nixl_diskstat_writes_completed_total[5m])
 nixl_nvme_available_spare_percent < nixl_nvme_available_spare_threshold_percent
+nixl_md_degraded == 1
+nixl_lvm_thin_data_percent > 85
 ```
 
 ## Network Stack

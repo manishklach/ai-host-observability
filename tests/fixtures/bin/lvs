@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cat <<'EOF'
+ thinpool vg0 twi-aotz-- 107374182400 87.5 61.2
+ data vg0 -wi-ao---- 53687091200
+EOF
