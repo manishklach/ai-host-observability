@@ -1189,6 +1189,82 @@ metric_relabel_configs:
 - Interpretation: block queue shape, sector size, discard support, scheduler, and in-flight read/write split
 - Example alert: `nixl_block_rotational == 1`
 
+### `nixl_nvme_scrape_success`
+
+- Type: `gauge`
+- Labels: none
+- Unit: boolean `0/1`
+- Source: `scripts/nvme-smart-exporter.sh`
+- When absent: exporter did not run
+- Cardinality estimate: 1
+- Interpretation: whether NVMe SMART collection completed
+
+### `nixl_nvme_percentage_used`
+
+- Type: `gauge`
+- Labels: `device`, `model`, `serial`
+- Unit: percent
+- Source: `nvme smart-log --output-format=json`
+- When absent: `nvme` unavailable, no NVMe devices, or SMART field unavailable
+- Cardinality estimate: O(NVMe devices)
+- Interpretation: lifetime endurance consumed, where values can exceed 100 on some drives
+- Example alert: `nixl_nvme_percentage_used > 80`
+
+### `nixl_nvme_available_spare_percent`
+
+- Type: `gauge`
+- Labels: `device`, `model`, `serial`
+- Unit: percent
+- Source: `nvme smart-log --output-format=json`
+- When absent: `nvme` unavailable, no NVMe devices, or SMART field unavailable
+- Cardinality estimate: O(NVMe devices)
+- Interpretation: remaining spare capacity percentage
+- Example alert: `nixl_nvme_available_spare_percent < nixl_nvme_available_spare_threshold_percent`
+
+### `nixl_nvme_critical_warning`
+
+- Type: `gauge`
+- Labels: `device`, `model`, `serial`
+- Unit: bitmask
+- Source: `nvme smart-log --output-format=json`
+- When absent: `nvme` unavailable, no NVMe devices, or SMART field unavailable
+- Cardinality estimate: O(NVMe devices)
+- Interpretation: NVMe critical warning bitmask
+- Example alert: `nixl_nvme_critical_warning > 0`
+
+### `nixl_nvme_warn_*`
+
+- Type: `gauge`
+- Labels: `device`, `model`, `serial`
+- Unit: boolean `0/1`
+- Source: decoded `critical_warning` bits from `nvme smart-log`
+- When absent: critical warning field unavailable
+- Cardinality estimate: O(NVMe devices x warning bits)
+- Interpretation: individual NVMe critical warning bits for spare, temperature, reliability, read-only, and volatile backup failure
+- Example alert: `nixl_nvme_warn_read_only == 1`
+
+### `nixl_nvme_temperature_celsius`
+
+- Type: `gauge`
+- Labels: `device`, `model`, `serial`, `sensor`
+- Unit: Celsius
+- Source: `nvme smart-log --output-format=json`
+- When absent: `nvme` unavailable, no NVMe devices, or temperature field unavailable
+- Cardinality estimate: O(NVMe devices x sensors)
+- Interpretation: composite and per-sensor NVMe temperatures
+- Example alert: `nixl_nvme_temperature_celsius{sensor="composite"} > 70`
+
+### `nixl_nvme_*_total`
+
+- Type: `counter`
+- Labels: `device`, `model`, `serial`
+- Unit: bytes, commands, seconds, cycles, shutdowns, errors, or log entries depending on metric
+- Source: `nvme smart-log --output-format=json`
+- When absent: `nvme` unavailable, no NVMe devices, or SMART field unavailable
+- Cardinality estimate: O(NVMe devices)
+- Interpretation: NVMe lifetime traffic, command, power, busy-time, and reliability counters
+- Example alert: `increase(nixl_nvme_media_errors_total[1h]) > 0`
+
 ### `nixl_filesystem_bytes`
 
 - Type: `gauge`

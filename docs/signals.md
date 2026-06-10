@@ -57,6 +57,10 @@
 - `nixl_filesystem_bytes{field="avail"}`
 - `nixl_file_nr{field="allocated"}`
 - `nixl_inode_nr{field="allocated"}`
+- `nixl_nvme_percentage_used`
+- `nixl_nvme_available_spare_percent`
+- `nixl_nvme_critical_warning`
+- `nixl_nvme_temperature_celsius{sensor="composite"}`
 
 Recommended PromQL:
 
@@ -64,6 +68,7 @@ Recommended PromQL:
 rate(nixl_diskstat_io_time_ms_total[5m])
 nixl_diskstat_io_in_progress / nixl_block_queue_depth
 rate(nixl_diskstat_reads_completed_total[5m]) + rate(nixl_diskstat_writes_completed_total[5m])
+nixl_nvme_available_spare_percent < nixl_nvme_available_spare_threshold_percent
 ```
 
 ## Network Stack

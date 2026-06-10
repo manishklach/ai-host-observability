@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+case "$*" in
+*"list --output-format=json"*)
+  cat <<'JSON'
+{
+  "Devices": [
+    {
+      "DevicePath": "/dev/nvme0n1",
+      "ModelNumber": "Fixture NVMe Model 1234567890",
+      "SerialNumber": "SN1234567890FIXTURE",
+      "PhysicalSize": 1024000000000,
+      "UsedBytes": 512000000000
+    }
+  ]
+}
+JSON
+  ;;
+*"smart-log /dev/nvme0n1 --output-format=json"*)
+  cat <<'JSON'
+{
+  "critical_warning": 1,
+  "temperature": 343,
+  "available_spare": 9,
+  "available_spare_threshold": 10,
+  "percentage_used": 81,
+  "data_units_read": 1000,
+  "data_units_written": 2000,
+  "host_read_commands": 3000,
+  "host_write_commands": 4000,
+  "controller_busy_time": 12,
+  "power_cycles": 5,
+  "power_on_hours": 100,
+  "unsafe_shutdowns": 2,
+  "media_errors": 1,
+  "num_err_log_entries": 7,
+  "temperature_sensor_1": 330,
+  "temperature_sensor_2": 0
+}
+JSON
+  ;;
+*)
+  exit 1
+  ;;
+esac

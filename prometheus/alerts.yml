@@ -607,3 +607,72 @@ groups:
             Treat this as a stuck-write symptom and inspect kernel logs, filesystem
             state, and device health before assuming the application is idle.
           runbook_url: docs/runbooks/DiskWriteErrorsIncreasing.md
+
+      - alert: NVMeWearHigh
+        expr: nixl_nvme_percentage_used > 80
+        for: 0m
+        labels:
+          severity: warning
+          component: ai_host
+        annotations:
+          summary: NVMe percentage used is high.
+          description: >-
+            The drive is reporting more than eighty percent lifetime usage. Plan
+            replacement before spare capacity, media errors, or critical warnings
+            turn this into an incident.
+          runbook_url: docs/runbooks/NVMeWearHigh.md
+
+      - alert: NVMeSpareCritical
+        expr: nixl_nvme_available_spare_percent < nixl_nvme_available_spare_threshold_percent
+        for: 0m
+        labels:
+          severity: critical
+          component: ai_host
+        annotations:
+          summary: NVMe available spare is below threshold.
+          description: >-
+            Available spare has fallen below the vendor threshold. Treat this as
+            a replace-now condition for hosts that carry checkpoint, dataset, or
+            local scratch traffic.
+          runbook_url: docs/runbooks/NVMeSpareCritical.md
+
+      - alert: NVMeMediaErrors
+        expr: increase(nixl_nvme_media_errors_total[1h]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          component: ai_host
+        annotations:
+          summary: NVMe media errors are increasing.
+          description: >-
+            The drive reported new media or data integrity errors. Protect active
+            jobs and inspect SMART details, kernel logs, and storage redundancy.
+          runbook_url: docs/runbooks/NVMeMediaErrors.md
+
+      - alert: NVMeCriticalWarning
+        expr: nixl_nvme_critical_warning > 0
+        for: 0m
+        labels:
+          severity: critical
+          component: ai_host
+        annotations:
+          summary: NVMe critical warning bit is set.
+          description: >-
+            The drive is reporting at least one critical warning bit, such as low
+            spare, thermal threshold, degraded reliability, read-only mode, or
+            volatile backup failure.
+          runbook_url: docs/runbooks/NVMeCriticalWarning.md
+
+      - alert: NVMeTempHigh
+        expr: nixl_nvme_temperature_celsius{sensor="composite"} > 70
+        for: 5m
+        labels:
+          severity: warning
+          component: ai_host
+        annotations:
+          summary: NVMe composite temperature is high.
+          description: >-
+            The NVMe composite temperature has stayed above seventy Celsius.
+            Check drive cooling, adjacent GPU heat, chassis airflow, and whether
+            the device is throttling or accumulating errors.
+          runbook_url: docs/runbooks/NVMeTempHigh.md
